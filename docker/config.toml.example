@@ -1,0 +1,57 @@
+# config.toml used by the full-stack docker-compose (docker-compose.full.yml).
+# Mounted into ghcr.io/abkvme/taler-explorer at /etc/taler-explorer/config.toml.
+#
+# The explorer reaches the Taler node via the compose-internal Docker DNS
+# hostname `taler`. RPC credentials must match docker/taler.conf.example.
+
+[server]
+listen = "0.0.0.0:37332"
+
+[rpc]
+url = "http://taler:23333"
+user = "taler-explorer"
+password = "W938kdAsqu7jMvTzMjUJ7KHxorEjB0Fqmnzv7Y9O"
+timeout_seconds = 15
+
+[db]
+path = "/data/taler-explorer.db"
+
+[indexer]
+tip_poll_seconds = 3
+mempool_poll_seconds = 3
+peers_poll_seconds = 30
+stats_poll_seconds = 60
+# Walk back 500 blocks on first sync so the initial indexer run doesn't hammer
+# the node. Raise later if you want deeper history.
+initial_backfill = 500
+
+[movements]
+threshold_low = 100
+threshold_mid = 1000
+threshold_high = 5000
+
+[transactions]
+per_page = 100
+green_below  = 100
+yellow_below = 1000
+red_below    = 10000
+
+[network]
+history_hours = 720   # 30 days
+
+[prices]
+enabled = true
+endpoint = "https://qutrade.io/api/v1/market_data/"
+pair = "tlr_usdt"
+quote_symbol = "USDT"
+poll_interval_minutes = 10
+market_url = "https://qutrade.io/en/?market=tlr_usdt"
+
+[geoip]
+enabled = true
+endpoint = "https://reallyfreegeoip.org/json/%s"
+
+[ui]
+site_name = "Taler Explorer"
+coin_symbol = "TLR"
+accent_color = "#c9a24b"

@@ -1,0 +1,57 @@
+# Full-stack docker-compose: Taler node + taler-explorer.
+#
+# Quick start (from the repo root):
+#   mkdir -p ./taler-conf ./explorer-conf
+#   cp docker/taler.conf.example   ./taler-conf/taler.conf
+#   cp docker/config.toml.example  ./explorer-conf/config.toml
+#   # (Optionally change rpcuser/rpcpassword in BOTH files — they must match.)
+#   docker compose -f docker-compose.full.yml up -d
+#
+# Then open http://localhost:37332/ once the node has started syncing.
+#
+# The RPC port (23333) is NOT published to the host — only the explorer
+# container on the shared internal network can reach it. If you want to hit
+# the RPC from your host too, add `"127.0.0.1:23333:23333"` to the `taler`
+# service's ports list.
+
+services:
+  taler:
+    image: ghcr.io/abkvme/taler:latest
+    container_name: taler-node
+    restart: unless-stopped
+    ports:
+      - "23153:23153"            # P2P (needs to be reachable for inbound peers)
+    volumes:
+      - taler-data:/data
+      - ./taler-conf/taler.conf:/taler.conf:ro
+    networks:
+      - taler-net
+    healthcheck:
+      test: ["CMD", "taler-cli", "getblockchaininfo"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  taler-explorer:
+    image: ghcr.io/abkvme/taler-explorer:latest
+    container_name: taler-explorer
+    restart: unless-stopped
+    depends_on:
+      taler:
+        condition: service_healthy
+    ports:
+      - "37332:37332"             # explorer UI
+    volumes:
+      - ./explorer-conf/config.toml:/etc/taler-explorer/config.toml:ro
+      - taler-explorer-data:/data
+    networks:
+      - taler-net
+
+volumes:
+  taler-data:
+  taler-explorer-data:
+
+networks:
+  taler-net:
+    driver: bridge

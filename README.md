@@ -50,6 +50,10 @@ Your `talerd` must be started with `-server=1 -rpcuser=X -rpcpassword=Y` (see [`
 
 ## Run via Docker
 
+Two variants are provided — pick whichever fits your setup.
+
+### A. Explorer only — you already run `talerd` on the host
+
 ```sh
 cp config.example.toml config.toml
 # edit [rpc] credentials
@@ -58,9 +62,35 @@ docker compose up -d
 # open http://localhost:37332/
 ```
 
-The compose file maps `host.docker.internal` so the container reaches a `talerd` running on the Docker host.
+The compose file maps `host.docker.internal` so the container reaches a
+`talerd` running on the Docker host.
 
-Pre-built images on every tag release:
+### B. Full stack — Taler node + explorer together
+
+Runs the official [`ghcr.io/abkvme/taler`](https://github.com/abkvme/taler) image
+alongside the explorer, already wired for JSON-RPC on the compose-internal
+network (RPC port is **not** exposed to the host — only reachable from the
+explorer container). The P2P port `23153` **is** published so your node accepts
+inbound peers.
+
+```sh
+mkdir -p ./taler-conf ./explorer-conf
+cp docker/taler.conf.example   ./taler-conf/taler.conf
+cp docker/config.toml.example  ./explorer-conf/config.toml
+# rpcuser / rpcpassword in both files must match — change both together.
+
+docker compose -f docker-compose.full.yml up -d
+
+# Watch the node sync:
+docker compose -f docker-compose.full.yml logs -f taler
+# Open the explorer:
+open http://localhost:37332/
+```
+
+Two named volumes (`taler-data`, `taler-explorer-data`) hold the chain data
+and the explorer's SQLite index. Both survive container upgrades.
+
+### Image tags
 
 ```
 docker pull ghcr.io/abkvme/taler-explorer:latest

@@ -1,0 +1,47 @@
+# taler.conf used by the full-stack docker-compose (docker-compose.full.yml).
+# Mounted into ghcr.io/abkvme/taler at /taler.conf.
+#
+# This file enables JSON-RPC so the taler-explorer sibling container can talk
+# to the node via Docker's internal DNS (http://taler:23333).
+#
+# IMPORTANT: change rpcuser / rpcpassword before using in production and make
+# sure they match [rpc] in docker/config.toml.example.
+
+##
+## Network
+##
+listen=1
+maxconnections=128
+
+##
+## RPC server — reachable only on the compose-internal network.
+##
+server=1
+rpcbind=0.0.0.0
+rpcport=23333
+rpcuser=taler-explorer
+rpcpassword=W938kdAsqu7jMvTzMjUJ7KHxorEjB0Fqmnzv7Y9O
+# Docker's user-defined bridge uses 172.16.0.0/12 ranges by default; using
+# a wider mask here is fine because the RPC port is NOT published to the host
+# in docker-compose.full.yml.
+rpcallowip=0.0.0.0/0
+
+##
+## Wallet — disabled in the explorer stack. The explorer doesn't need a
+## wallet; running without one keeps the attack surface minimal.
+##
+disablewallet=1
+
+##
+## Logging
+##
+logips=1
+shrinkdebugfile=1
+logtimestamps=1
+
+##
+## Performance
+##
+dbcache=450
+par=4
+peerbloomfilters=1
