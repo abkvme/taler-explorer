@@ -1,0 +1,111 @@
+{{define "body"}}
+<section class="hero">
+  <h1>Network</h1>
+  <p class="subtitle">Every peer seen in the last {{fmtHours .HistoryHours}}. Green dot = connected right now.</p>
+</section>
+
+<section class="summary-grid">
+  <div class="card summary">
+    <div class="kpi">{{.LiveCount}}</div>
+    <div class="kpi-label">Connected now</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{len .Peers}}</div>
+    <div class="kpi-label">Seen in {{fmtHours .HistoryHours}}</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{.Inbound}} / {{.Outbound}}</div>
+    <div class="kpi-label">Inbound / Outbound (live)</div>
+  </div>
+  <div class="card summary versions">
+    <div class="kpi-label">Versions</div>
+    <ul class="version-list">
+      {{range $v, $c := .Versions}}<li><span class="version-tag">{{cleanVersion $v | default "unknown"}}</span><span class="version-count">{{$c}}</span></li>{{end}}
+    </ul>
+  </div>
+</section>
+
+<section class="card" x-data="{ view: 'list' }">
+  <div class="card-toolbar">
+    <div class="view-switch" role="tablist" aria-label="View">
+      <button type="button" role="tab" :aria-selected="view==='list'" :class="{active: view==='list'}" @click="view='list'">List</button>
+      <button type="button" role="tab" :aria-selected="view==='map'" :class="{active: view==='map'}" @click="view='map'; $nextTick(() => window.__initPeerMap && window.__initPeerMap())">Map</button>
+    </div>
+    <button class="btn-refresh"
+            hx-get="/_partial/peers"
+            hx-target="#peers-body"
+            hx-swap="innerHTML"
+            hx-indicator="#peers-refresh-spinner">
+      <span class="refresh-glyph">↻</span> Refresh
+      <span id="peers-refresh-spinner" class="htmx-indicator">…</span>
+    </button>
+  </div>
+
+  <div x-show="view === 'list'" x-cloak>
+    <div class="table-wrap">
+      <table class="data-table peer-table">
+        <thead>
+          <tr>
+            <th>Address</th>
+            <th>Country</th>
+            <th>Version</th>
+            <th class="num">Height</th>
+            <th class="num">Last seen</th>
+          </tr>
+        </thead>
+        <tbody id="peers-body">
+          {{range .Peers}}
+          {{template "peer_row" (dict "Peer" . "Now" $.Now)}}
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div x-show="view === 'map'" x-cloak>
+    <div id="peer-map" class="peer-map" aria-label="Peer world map"></div>
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+<script>
+  (function () {
+    var points = {{.MapPointsJSON}};
+    var map = null;
+    window.__initPeerMap = function () {
+      if (!window.L) { setTimeout(window.__initPeerMap, 100); return; }
+      var el = document.getElementById('peer-map');
+      if (!el) return;
+      if (map) { setTimeout(function(){ map.invalidateSize(); }, 50); return; }
+      map = L.map(el, { zoomControl: true, worldCopyJump: true }).setView([20, 0], 2);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 10,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      var live = L.layerGroup().addTo(map);
+      var seen = L.layerGroup().addTo(map);
+      points.forEach(function (p) {
+        var fill = p.live ? '#3cc98a' : '#c5cbd7';
+        var marker = L.circleMarker([p.lat, p.lng], {
+          radius: p.live ? 4 : 3,
+          color: '#0b0d12',           // dark border — stands out on gray tiles
+          weight: 1.5,
+          fillColor: fill,
+          fillOpacity: 1,
+          opacity: 1,
+        });
+        marker.bindPopup(
+          '<strong>' + (p.addr || '') + '</strong><br>' +
+          (p.country || 'Unknown') + (p.code ? ' (' + p.code + ')' : '') + '<br>' +
+          (p.subver ? p.subver.replace(/[<>]/g,'') + '<br>' : '') +
+          'Height: ' + (p.height || 0) + '<br>' +
+          (p.live ? '<span style="color:#3cc98a">● connected now</span>' : '<span style="color:#8a93a6">◦ seen recently</span>')
+        );
+        (p.live ? live : seen).addLayer(marker);
+      });
+      setTimeout(function(){ map.invalidateSize(); }, 50);
+    };
+  })();
+</script>
+{{end}}

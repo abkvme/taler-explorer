@@ -1,0 +1,36 @@
+{{define "body"}}
+<section class="hero">
+  <h1>Large transactions</h1>
+  <p class="subtitle">
+    Transactions moving more than <strong>{{fmtTLR .ThresholdLow}}</strong> {{ui.CoinSymbol}}.
+    Tiers:
+    <span class="chip tier-low">&ge; {{fmtTLR .ThresholdLow}}</span>
+    <span class="chip tier-mid">&ge; {{fmtTLR .ThresholdMid}}</span>
+    <span class="chip tier-high">&ge; {{fmtTLR .ThresholdHigh}}</span>
+  </p>
+</section>
+
+<section class="card">
+  <div class="table-wrap">
+    <table class="data-table movement-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Txid</th>
+          <th class="num">Total</th>
+          <th class="num">Largest output</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="movements-body"
+             hx-get="/_partial/movements"
+             hx-trigger="every 10s"
+             hx-swap="innerHTML">
+        {{range .Movements}}
+        {{template "movement_row" (dict "Tx" . "ThresholdLow" $.ThresholdLow "ThresholdMid" $.ThresholdMid "ThresholdHigh" $.ThresholdHigh) }}
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

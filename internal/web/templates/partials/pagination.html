@@ -1,0 +1,28 @@
+{{define "pagination"}}
+{{if gt .TotalPages 1}}
+<nav class="pagination" aria-label="pagination">
+  {{if .HasPrev}}
+    <a class="page-link" href="/txs?page=1">« First</a>
+    <a class="page-link" href="/txs?page={{.PrevPage}}">‹ Prev</a>
+  {{else}}
+    <span class="page-link disabled">« First</span>
+    <span class="page-link disabled">‹ Prev</span>
+  {{end}}
+  {{range pageRange .Page .TotalPages 3}}
+    {{if eq . $.Page}}
+      <span class="page-link current">{{.}}</span>
+    {{else}}
+      <a class="page-link" href="/txs?page={{.}}">{{.}}</a>
+    {{end}}
+  {{end}}
+  {{if .HasNext}}
+    <a class="page-link" href="/txs?page={{.NextPage}}">Next ›</a>
+    <a class="page-link" href="/txs?page={{.TotalPages}}">Last »</a>
+  {{else}}
+    <span class="page-link disabled">Next ›</span>
+    <span class="page-link disabled">Last »</span>
+  {{end}}
+  <span class="page-info">Page {{.Page}} / {{.TotalPages}} · {{.PerPage}} per page</span>
+</nav>
+{{end}}
+{{end}}

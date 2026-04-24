@@ -1,0 +1,75 @@
+# taler-explorer configuration
+
+[server]
+listen = "0.0.0.0:37332"
+
+[rpc]
+# Default Taler mainnet RPC port is 7332. Point this at a talerd started with
+# -txindex=1 -server=1 -rpcuser=X -rpcpassword=Y (or via cookie auth).
+url = "http://127.0.0.1:7332"
+user = "taler"
+password = "changeme"
+# Per-call timeout.
+timeout_seconds = 15
+
+[db]
+# SQLite file location (pure-Go driver, no cgo).
+path = "./taler-explorer.db"
+
+[indexer]
+# Polling cadence for the tip follower and mempool watcher.
+tip_poll_seconds = 3
+mempool_poll_seconds = 3
+peers_poll_seconds = 30
+stats_poll_seconds = 60
+
+# Cap how far back the tip follower will walk on first sync.
+# 0 = only index blocks appended from this moment on.
+# >0 = walk this many blocks back from current tip on startup.
+initial_backfill = 500
+
+[movements]
+# Large-transaction watcher threshold (in TLR) and tier thresholds for
+# color-coding (yellow / orange / red). Any tx with a vout >= threshold_low
+# shows up on /movements.
+threshold_low = 100
+threshold_mid = 1000
+threshold_high = 5000
+
+[transactions]
+# Page size for /txs.
+per_page = 100
+# Amount-tier thresholds (in TLR) for the colored dot next to each tx.
+#  total_out <  green_below  -> blue
+#  total_out <  yellow_below -> green
+#  total_out <  red_below    -> yellow
+#  total_out >= red_below    -> red
+green_below  = 100
+yellow_below = 1000
+red_below    = 10000
+
+[network]
+# /network lists every peer seen in the last N hours, not just currently
+# connected. Peers whose last_seen falls outside this window are pruned.
+history_hours = 720   # 30 days
+
+[prices]
+# Poll qutrade.io for the TLR/USDT ticker and cache it in SQLite.
+# Shown as a tile in the header when enabled.
+enabled = true
+endpoint = "https://qutrade.io/api/v1/market_data/"
+pair = "tlr_usdt"
+quote_symbol = "USDT"
+poll_interval_minutes = 10
+market_url = "https://qutrade.io/en/?market=tlr_usdt"
+
+[geoip]
+# reallyfreegeoip.org lookups on /network. Free, no key, cached for 24h.
+enabled = true
+endpoint = "https://reallyfreegeoip.org/json/%s"
+
+[ui]
+# Title and theme accents used by the templates.
+site_name = "Taler Explorer"
+coin_symbol = "TLR"
+accent_color = "#c9a24b"

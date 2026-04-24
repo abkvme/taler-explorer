@@ -1,0 +1,30 @@
+# docker-compose example for taler-explorer.
+#
+# Prerequisites:
+#   1. A running `talerd` reachable at an RPC URL (mainnet defaults to 7332).
+#      If talerd runs on the Docker host itself, use host.docker.internal in
+#      your config's [rpc].url (this compose file already maps that name).
+#   2. A config.toml in the current directory. Copy config.example.toml and
+#      set [rpc] credentials to match your node.
+#
+# Quick start:
+#   cp config.example.toml config.toml      # edit rpc.user / rpc.password
+#   docker compose up -d
+#   open http://localhost:37332/
+
+services:
+  taler-explorer:
+    image: ghcr.io/abkvme/taler-explorer:latest
+    container_name: taler-explorer
+    restart: unless-stopped
+    ports:
+      - "37332:37332"
+    volumes:
+      - ./config.toml:/etc/taler-explorer/config.toml:ro
+      - taler-explorer-data:/data
+    # Let the container reach the host's Taler RPC via http://host.docker.internal:7332
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  taler-explorer-data:

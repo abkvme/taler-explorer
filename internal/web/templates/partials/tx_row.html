@@ -1,0 +1,21 @@
+{{define "tx_row"}}
+{{$tx := .Tx}}
+<tr class="row-in" data-txid="{{$tx.Txid}}" onclick="window.location='/txs/{{$tx.Txid}}'" role="link" tabindex="0">
+  <td class="mono small-time">{{localTime $tx.Time}}</td>
+  <td class="t-txid">
+    <code class="mono" title="{{$tx.Txid}}"><a class="cell-link" href="/txs/{{$tx.Txid}}">{{truncMiddle $tx.Txid 10}}</a></code>
+    <button class="copy-btn" data-copy="{{$tx.Txid}}" title="Copy txid" aria-label="Copy txid">⧉</button>
+  </td>
+  <td class="num">{{$tx.VinCount}}</td>
+  <td class="num">{{$tx.VoutCount}}</td>
+  <td class="num mono {{txTier $tx.TotalOut .GreenBelow .YellowBelow .RedBelow}}">{{fmtTLR $tx.TotalOut}}</td>
+  <td>
+    {{if $tx.BlockHeight}}
+      <a class="badge confirmed" href="/blocks/{{deref $tx.BlockHeight}}" onclick="event.stopPropagation()">#{{fmtInt (deref $tx.BlockHeight)}}</a>
+    {{else}}
+      <span class="badge mempool">mempool</span>
+    {{end}}
+    {{if $tx.IsCoinstake}}<span class="badge coinstake">PoS reward</span>{{end}}
+  </td>
+</tr>
+{{end}}

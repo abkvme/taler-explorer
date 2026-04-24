@@ -1,0 +1,32 @@
+{{define "body"}}
+<section class="hero">
+  <h1>Latest blocks</h1>
+  <p class="subtitle">Newest blocks at the top. Click any row for block details.</p>
+</section>
+
+<section class="card">
+  <div class="table-wrap">
+    <table class="data-table block-table">
+      <thead>
+        <tr>
+          <th class="num">Height</th>
+          <th>Time</th>
+          <th>Type</th>
+          <th class="num">Txs</th>
+          <th class="num">Size</th>
+          <th class="num">Difficulty</th>
+          <th>Hash</th>
+        </tr>
+      </thead>
+      <tbody id="blocks-body"
+             hx-get="/_partial/latest-blocks"
+             hx-trigger="every 10s"
+             hx-swap="innerHTML">
+        {{range .Blocks}}
+        {{template "block_row" .}}
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

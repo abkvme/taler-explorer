@@ -1,0 +1,14 @@
+.git
+.github
+.bin
+*.db
+*.db-wal
+*.db-shm
+config.toml
+README.md
+docker-compose.yml
+Dockerfile
+.dockerignore
+.gitignore
+LICENSE
+run.sh

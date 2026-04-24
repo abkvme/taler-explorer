@@ -1,0 +1,69 @@
+{{define "body"}}
+{{$b := .Block}}
+<section class="hero">
+  <h1>Block #{{fmtInt $b.Height}}</h1>
+  <p class="subtitle mono">{{$b.Hash}}</p>
+</section>
+
+<section class="summary-grid">
+  <div class="card summary">
+    <div class="kpi">{{if $b.IsPoS}}PoS{{else}}PoW{{end}}</div>
+    <div class="kpi-label">Proof type</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{$b.TxCount}}</div>
+    <div class="kpi-label">Transactions</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{fmtSize $b.Size}}</div>
+    <div class="kpi-label">Size</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{fmtDiff $b.Difficulty}}</div>
+    <div class="kpi-label">Difficulty</div>
+  </div>
+</section>
+
+<section class="card detail-card">
+  <dl class="kv-list">
+    <dt>Time</dt><dd class="mono">{{localTime $b.Time}}</dd>
+    <dt>Bits</dt><dd class="mono">{{$b.Bits}}</dd>
+    <dt>Previous block</dt><dd class="mono"><a href="/blocks/{{sub $b.Height 1}}">{{truncMiddle $b.PrevHash 12}}</a></dd>
+    {{if $b.MinerAddress}}<dt>Miner address</dt><dd class="mono">{{$b.MinerAddress}}</dd>{{end}}
+    {{if $b.StakerAddress}}<dt>Staker address</dt><dd class="mono">{{$b.StakerAddress}}</dd>{{end}}
+  </dl>
+</section>
+
+<section class="card">
+  <h2 class="section-h">Transactions in this block</h2>
+  <div class="table-wrap">
+    <table class="data-table tx-table">
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>Txid</th>
+          <th class="num">Ins</th>
+          <th class="num">Outs</th>
+          <th class="num">Value ({{ui.CoinSymbol}})</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Txs}}
+        <tr onclick="window.location='/txs/{{.Txid}}'" role="link" tabindex="0">
+          <td class="num mono">{{.IdxInBlock}}</td>
+          <td class="mono"><a class="cell-link" href="/txs/{{.Txid}}">{{truncMiddle .Txid 12}}</a></td>
+          <td class="num">{{.VinCount}}</td>
+          <td class="num">{{.VoutCount}}</td>
+          <td class="num mono {{txTier .TotalOut $.GreenBelow $.YellowBelow $.RedBelow}}">{{fmtTLR .TotalOut}}</td>
+          <td>
+            {{if .IsCoinbase}}<span class="badge pow">block reward</span>{{end}}
+            {{if .IsCoinstake}}<span class="badge coinstake">stake reward</span>{{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

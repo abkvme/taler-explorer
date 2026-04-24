@@ -1,0 +1,27 @@
+# Build output
+/.bin/
+/dist/
+taler-explorer
+*.exe
+
+# Local SQLite DB + sidecars
+*.db
+*.db-wal
+*.db-shm
+
+# Local dev config (contains RPC credentials). config.example.toml stays tracked.
+config.toml
+
+# Editor / OS junk
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go test + coverage
+*.out
+coverage.*
+
+# Logs
+*.log

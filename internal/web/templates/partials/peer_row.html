@@ -1,0 +1,21 @@
+{{define "peer_row"}}
+{{$p := .Peer}}
+{{$now := .Now}}
+<tr class="row-in {{if le (sub $now $p.LastSeen) 120}}peer-live{{else}}peer-offline{{end}}" data-addr="{{$p.Addr}}">
+  <td>
+    <span class="live-dot" title="{{if le (sub $now $p.LastSeen) 120}}connected now{{else}}last seen {{unixTime $p.LastSeen}}{{end}}"></span>
+    <code class="mono">{{$p.Addr}}{{if $p.Port}}:{{$p.Port}}{{end}}</code>
+  </td>
+  <td>
+    {{if $p.CountryCode}}
+      <span class="flag">{{countryFlag $p.CountryCode}}</span>
+      <span class="country-name">{{$p.Country}}</span>
+    {{else}}
+      <span class="country-name muted">Unknown</span>
+    {{end}}
+  </td>
+  <td class="mono">{{cleanVersion $p.Subver | default "—"}}</td>
+  <td class="num">{{fmtInt $p.Height}}</td>
+  <td class="num last-seen">{{liveSince $p.LastSeen $now}}</td>
+</tr>
+{{end}}

@@ -1,0 +1,114 @@
+{{define "body"}}
+{{$t := .Tx}}
+<section class="hero">
+  <h1>Transaction</h1>
+  <p class="subtitle mono break-all">{{$t.Txid}}</p>
+</section>
+
+<section class="summary-grid">
+  <div class="card summary">
+    <div class="kpi {{txTier $t.TotalOut .GreenBelow .YellowBelow .RedBelow}}">{{fmtTLR $t.TotalOut}}</div>
+    <div class="kpi-label">Total out ({{ui.CoinSymbol}})</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{$t.VinCount}} / {{$t.VoutCount}}</div>
+    <div class="kpi-label">Inputs / Outputs</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{fmtTLR $t.MaxVout}}</div>
+    <div class="kpi-label">Largest output</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">
+      {{if $t.BlockHeight}}
+        <a href="/blocks/{{deref $t.BlockHeight}}">#{{fmtInt (deref $t.BlockHeight)}}</a>
+      {{else}}
+        <span class="badge mempool">mempool</span>
+      {{end}}
+    </div>
+    <div class="kpi-label">Block</div>
+  </div>
+</section>
+
+<section class="card detail-card">
+  <dl class="kv-list">
+    <dt>Time</dt><dd class="mono">{{localTime $t.Time}}</dd>
+    <dt>Index in block</dt><dd class="mono">{{$t.IdxInBlock}}</dd>
+    {{if $t.IsCoinbase}}<dt>Role</dt><dd><span class="badge pow">block reward</span></dd>{{end}}
+    {{if $t.IsCoinstake}}<dt>Role</dt><dd><span class="badge coinstake">stake reward</span></dd>{{end}}
+    {{if .InputsResolvedAll}}
+      <dt>Total in</dt><dd class="mono">{{fmtTLR .TotalIn}} {{ui.CoinSymbol}}</dd>
+      <dt>Fee</dt><dd class="mono">{{fmtTLR .Fee}} {{ui.CoinSymbol}}</dd>
+    {{end}}
+  </dl>
+</section>
+
+<section class="card">
+  <h2 class="section-h">Inputs ({{$t.VinCount}})</h2>
+  {{if .InputsFromRPC}}
+    <p class="section-note">Inputs fetched live from the node — this tx predates the explorer's input index, so future reloads stay fast only if you reindex.</p>
+  {{end}}
+  <div class="table-wrap">
+    <table class="data-table tx-table">
+      <thead>
+        <tr>
+          <th class="num">#</th>
+          <th>Previous output</th>
+          <th>Address</th>
+          <th class="num">Amount ({{ui.CoinSymbol}})</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Inputs}}
+        <tr>
+          <td class="num mono">{{.Idx}}</td>
+          <td class="mono">
+            {{if .Coinbase}}
+              <span class="badge pow">coinbase</span>
+              <code class="mono muted" title="{{.Coinbase}}">{{truncMiddle .Coinbase 16}}</code>
+            {{else}}
+              <a class="cell-link" href="/txs/{{.PrevTxid}}" title="{{.PrevTxid}}:{{.PrevVout}}">{{truncMiddle .PrevTxid 12}}:{{.PrevVout}}</a>
+            {{end}}
+          </td>
+          <td class="mono">
+            {{if .Coinbase}}<span class="muted">—</span>
+            {{else if .Resolved}}{{.Address | default "—"}}
+            {{else}}<span class="muted" title="Previous tx not indexed">unresolved</span>
+            {{end}}
+          </td>
+          <td class="num mono {{if .Resolved}}{{txTier .Amount $.GreenBelow $.YellowBelow $.RedBelow}}{{else}}muted{{end}}">
+            {{if .Coinbase}}—{{else if .Resolved}}{{fmtTLR .Amount}}{{else}}?{{end}}
+          </td>
+        </tr>
+        {{else}}
+        <tr><td colspan="4" class="muted center">No inputs indexed for this transaction.</td></tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="section-h">Outputs ({{$t.VoutCount}})</h2>
+  <div class="table-wrap">
+    <table class="data-table tx-table">
+      <thead>
+        <tr>
+          <th class="num">Vout</th>
+          <th>Address</th>
+          <th class="num">Amount ({{ui.CoinSymbol}})</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Outputs}}
+        <tr>
+          <td class="num mono">{{.Vout}}</td>
+          <td class="mono">{{.Address | default "—"}}</td>
+          <td class="num mono {{txTier .Amount $.GreenBelow $.YellowBelow $.RedBelow}}">{{fmtTLR .Amount}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

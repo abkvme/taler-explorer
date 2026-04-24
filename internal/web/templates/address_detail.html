@@ -1,0 +1,75 @@
+{{define "body"}}
+{{$s := .Summary}}
+<section class="hero">
+  <h1>Address</h1>
+  <p class="subtitle mono break-all">{{$s.Address}}</p>
+</section>
+
+<section class="summary-grid">
+  <div class="card summary">
+    <div class="kpi">{{fmtTLR $s.Received}}</div>
+    <div class="kpi-label">Received ({{ui.CoinSymbol}})</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{fmtTLR $s.Sent}}</div>
+    <div class="kpi-label">Sent ({{ui.CoinSymbol}})</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{fmtTLR (sub64 $s.Received $s.Sent)}}</div>
+    <div class="kpi-label">Net ({{ui.CoinSymbol}})</div>
+  </div>
+  <div class="card summary">
+    <div class="kpi">{{fmtInt $s.TxCount}}</div>
+    <div class="kpi-label">Transactions</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="section-h">Transactions</h2>
+  <div class="table-wrap">
+    <table class="data-table tx-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Txid</th>
+          <th class="num">Ins</th>
+          <th class="num">Outs</th>
+          <th class="num">Total out ({{ui.CoinSymbol}})</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Txs}}
+        {{template "tx_row" (dict "Tx" . "GreenBelow" $.GreenBelow "YellowBelow" $.YellowBelow "RedBelow" $.RedBelow)}}
+        {{else}}
+        <tr><td colspan="6" class="muted center">No transactions indexed for this address yet.</td></tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{if gt .TotalPages 1}}
+  <nav class="pagination" aria-label="pagination">
+    {{if .HasPrev}}
+      <a class="page-link" href="?page=1">« First</a>
+      <a class="page-link" href="?page={{.PrevPage}}">‹ Prev</a>
+    {{else}}
+      <span class="page-link disabled">« First</span>
+      <span class="page-link disabled">‹ Prev</span>
+    {{end}}
+    {{range pageRange .Page .TotalPages 3}}
+      {{if eq . $.Page}}<span class="page-link current">{{.}}</span>
+      {{else}}<a class="page-link" href="?page={{.}}">{{.}}</a>{{end}}
+    {{end}}
+    {{if .HasNext}}
+      <a class="page-link" href="?page={{.NextPage}}">Next ›</a>
+      <a class="page-link" href="?page={{.TotalPages}}">Last »</a>
+    {{else}}
+      <span class="page-link disabled">Next ›</span>
+      <span class="page-link disabled">Last »</span>
+    {{end}}
+    <span class="page-info">Page {{.Page}} / {{.TotalPages}} · {{.PerPage}} per page</span>
+  </nav>
+  {{end}}
+</section>
+{{end}}

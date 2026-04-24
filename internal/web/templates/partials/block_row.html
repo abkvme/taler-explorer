@@ -1,0 +1,13 @@
+{{define "block_row"}}
+<tr class="row-in" data-height="{{.Height}}" onclick="window.location='/blocks/{{.Height}}'" role="link" tabindex="0">
+  <td class="num mono"><a class="cell-link" href="/blocks/{{.Height}}">#{{fmtInt .Height}}</a></td>
+  <td class="mono small-time">{{localTime .Time}}</td>
+  <td>
+    {{if .IsPoS}}<span class="badge pos">PoS</span>{{else}}<span class="badge pow">PoW</span>{{end}}
+  </td>
+  <td class="num">{{.TxCount}}</td>
+  <td class="num">{{fmtSize .Size}}</td>
+  <td class="num mono">{{fmtDiff .Difficulty}}</td>
+  <td class="mono"><code title="{{.Hash}}">{{truncMiddle .Hash 10}}</code></td>
+</tr>
+{{end}}

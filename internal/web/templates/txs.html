@@ -1,0 +1,38 @@
+{{define "body"}}
+<section class="hero">
+  <h1>Transactions</h1>
+  <p class="subtitle">
+    {{fmtInt .Total}} indexed.
+    Amount tiers:
+    <span class="amount-chip amount-blue">&lt; {{fmtTLR .GreenBelow}}</span>
+    <span class="amount-chip amount-green">&lt; {{fmtTLR .YellowBelow}}</span>
+    <span class="amount-chip amount-yellow">&lt; {{fmtTLR .RedBelow}}</span>
+    <span class="amount-chip amount-red">&ge; {{fmtTLR .RedBelow}}</span>
+  </p>
+</section>
+
+<section class="card">
+  <div class="table-wrap">
+    <table class="data-table tx-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Txid</th>
+          <th class="num">Ins</th>
+          <th class="num">Outs</th>
+          <th class="num">Value ({{ui.CoinSymbol}})</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tx-body"
+             {{if eq .Page 1}}hx-get="/_partial/latest-tx" hx-trigger="every 10s" hx-swap="innerHTML"{{end}}>
+        {{range .Txs}}
+        {{template "tx_row" (dict "Tx" . "GreenBelow" $.GreenBelow "YellowBelow" $.YellowBelow "RedBelow" $.RedBelow) }}
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{template "pagination" .}}
+</section>
+{{end}}

@@ -1,0 +1,64 @@
+{{define "header_stats"}}
+<div class="stat tile network-tile {{if .Stale}}stale{{end}}">
+  <div class="tile-content">
+    <div class="stat-label">Network</div>
+    <div class="stat-value">{{fmtHashrate .HashrateHPS}}</div>
+  </div>
+  <div id="sparkline-mount" class="tile-spark" title="Hashrate — last 24h"></div>
+</div>
+
+<div class="stat tile diff-tile {{if .Stale}}stale{{end}}">
+  <div class="stat-label">Difficulty</div>
+  <div class="diff-split">
+    <div class="diff-line"><span class="diff-tag">PoW</span><span class="diff-val">{{fmtDiff .DifficultyPOW}}</span></div>
+    <div class="diff-line"><span class="diff-tag">PoS</span><span class="diff-val">{{fmtDiff .DifficultyPOS}}</span></div>
+  </div>
+</div>
+
+<div class="stat tile {{if .Stale}}stale{{end}}">
+  <div class="stat-label">Supply</div>
+  <div class="stat-value">{{fmtTLR .Supply}}</div>
+</div>
+
+{{if .PriceAvailable}}
+<a class="stat tile tile-link price-tile network-tile" href="{{.PriceMarketURL}}" target="_blank" rel="noopener" title="Open on qutrade.io">
+  <div class="tile-content">
+    <div class="stat-label">Price <span class="quote-chip">{{.PriceQuote}}</span></div>
+    <div class="stat-value price-value">{{fmtPrice .Price}}</div>
+    <div class="stat-sub price-sub">
+      {{if gt .PriceTrend 0.0}}
+        <span class="trend up">▲ {{fmtTrend .PriceTrend}}</span>
+      {{else if lt .PriceTrend 0.0}}
+        <span class="trend down">▼ {{fmtTrend .PriceTrend}}</span>
+      {{else}}
+        <span class="trend flat">■ 0.00%</span>
+      {{end}}
+    </div>
+  </div>
+  <div id="price-spark" class="tile-spark" title="Price — last 24h"></div>
+</a>
+{{else}}
+<div class="stat tile tile-empty">
+  <div class="stat-label">Price</div>
+  <div class="stat-value muted">—</div>
+</div>
+{{end}}
+
+{{if .MarketCapAvailable}}
+<a class="stat tile tile-link mcap-tile" href="{{.PriceMarketURL}}" target="_blank" rel="noopener" title="Supply × Price ({{.PriceQuote}})">
+  <div class="stat-label">Market Cap <span class="quote-chip">{{.PriceQuote}}</span></div>
+  <div class="stat-value">{{fmtTLR .MarketCap}}</div>
+</a>
+{{else}}
+<div class="stat tile tile-empty">
+  <div class="stat-label">Market Cap</div>
+  <div class="stat-value muted">—</div>
+</div>
+{{end}}
+
+<div class="stat tile {{if .Stale}}stale{{end}}">
+  <div class="stat-label">Height</div>
+  <div class="stat-value">{{fmtInt .Height}}</div>
+  <div class="stat-sub">Peers: {{.PeerCount}} · {{.UpdatedAgo}}</div>
+</div>
+{{end}}
