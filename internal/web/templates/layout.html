@@ -13,6 +13,41 @@
   <script src="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.iife.min.js" defer></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.min.css">
   <style>:root { --accent: {{.UI.AccentColor}}; }</style>
+  <!-- Early-paint i18n: read stored preference or auto-detect from browser,
+       apply cached catalog synchronously so translated text renders on first
+       paint. Non-cached languages fetch async via app.js and re-apply. -->
+  <script>
+  (function () {
+    var SUP = ['en','be','ru','uk'];
+    var TTL = 365*24*60*60*1000;
+    var lang = 'en';
+    try {
+      var stored = localStorage.getItem('taler_lang');
+      var setAt = parseInt(localStorage.getItem('taler_lang_set_at') || '0', 10);
+      if (stored && SUP.indexOf(stored) >= 0 && Date.now() - setAt <= TTL) {
+        lang = stored;
+      } else {
+        var prefs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
+        for (var i = 0; i < prefs.length; i++) {
+          var p = String(prefs[i] || '').toLowerCase().split('-')[0];
+          if (SUP.indexOf(p) >= 0) { lang = p; break; }
+        }
+      }
+    } catch (_) {}
+    document.documentElement.setAttribute('lang', lang);
+    if (lang === 'en') return;
+    var cat = null;
+    try { cat = JSON.parse(localStorage.getItem('taler_lang_cache_' + lang) || 'null'); } catch (_) {}
+    if (!cat) return; // will be fetched + applied in app.js
+    document.addEventListener('DOMContentLoaded', function () {
+      function tr(k) { return (cat && Object.prototype.hasOwnProperty.call(cat, k) && cat[k]) || k; }
+      document.querySelectorAll('[data-t]').forEach(function (el) { var v = tr(el.getAttribute('data-t')); if (el.textContent !== v) el.textContent = v; });
+      document.querySelectorAll('[data-t-placeholder]').forEach(function (el) { el.setAttribute('placeholder', tr(el.getAttribute('data-t-placeholder'))); });
+      document.querySelectorAll('[data-t-title]').forEach(function (el) { el.setAttribute('title', tr(el.getAttribute('data-t-title'))); });
+      document.querySelectorAll('[data-t-aria-label]').forEach(function (el) { el.setAttribute('aria-label', tr(el.getAttribute('data-t-aria-label'))); });
+    });
+  })();
+  </script>
 </head>
 <body class="theme-dark">
   <div class="aurora" aria-hidden="true"></div>
@@ -26,14 +61,41 @@
           <span class="brand-line">Explorer</span>
         </span>
       </a>
+
+      <div class="lang-switch"
+           x-data="{ open: false, cur: (window.TalerI18n && window.TalerI18n.currentLang()) || (document.documentElement.getAttribute('lang') || 'en') }"
+           @click.outside="open = false"
+           @keydown.escape.window="open = false">
+        <button type="button" class="lang-current" @click="open = !open" :aria-expanded="open" aria-haspopup="listbox" :title="'Language: ' + cur.toUpperCase()">
+          <span x-text="cur.toUpperCase()">EN</span>
+          <span class="lang-caret" aria-hidden="true">▾</span>
+        </button>
+        <ul class="lang-menu" x-show="open" role="listbox" x-cloak>
+          <template x-for="c in ['en','be','ru','uk']" :key="c">
+            <li role="option" :aria-selected="cur === c">
+              <button type="button" :class="{ active: cur === c }"
+                      @click="cur = c; open = false; window.TalerI18n && window.TalerI18n.setLang(c)">
+                <span x-text="c.toUpperCase()"></span>
+                <span class="lang-native" x-text="({en:'English',be:'Беларуская',ru:'Русский',uk:'Українська'})[c]"></span>
+              </button>
+            </li>
+          </template>
+        </ul>
+      </div>
+
       <nav class="nav">
-        <a href="/"        class="{{if or (eq .Active "blocks") (eq .Active "block")}}active{{end}}">Blocks</a>
-        <a href="/txs"     class="{{if or (eq .Active "txs") (eq .Active "tx") (eq .Active "address")}}active{{end}}">Transactions</a>
-        <a href="/network" class="{{if eq .Active "network"}}active{{end}}">Network</a>
+        <a href="/"        class="{{if or (eq .Active "blocks") (eq .Active "block")}}active{{end}}" data-t="Blocks">Blocks</a>
+        <a href="/txs"     class="{{if or (eq .Active "txs") (eq .Active "tx") (eq .Active "address")}}active{{end}}" data-t="Transactions">Transactions</a>
+        <a href="/network" class="{{if eq .Active "network"}}active{{end}}" data-t="Network">Network</a>
       </nav>
       <form class="search-form" role="search" action="/search" method="get">
-        <input type="search" name="q" placeholder="Block #, tx hash, or address" autocomplete="off" spellcheck="false" aria-label="Search blocks, transactions, and addresses">
-        <button type="submit" aria-label="Search">⌕</button>
+        <input type="search" name="q"
+               placeholder="Block #, tx hash, or address"
+               data-t-placeholder="Block #, tx hash, or address"
+               autocomplete="off" spellcheck="false"
+               aria-label="Search blocks, transactions, and addresses"
+               data-t-aria-label="Search blocks, transactions, and addresses">
+        <button type="submit" aria-label="Search" data-t-aria-label="Search">⌕</button>
       </form>
     </div>
 
@@ -53,9 +115,9 @@
   <footer class="site-footer">
     <span>{{.UI.SiteName}}</span>
     <span class="sep">·</span>
-    <span>{{.UI.CoinSymbol}} chain</span>
+    <span>{{.UI.CoinSymbol}} <span data-t="chain">chain</span></span>
     <span class="sep">·</span>
-    <a class="version-tag-footer" href="https://github.com/abkvme/taler-explorer/releases" target="_blank" rel="noopener" title="View release notes">{{buildVersion}}</a>
+    <a class="version-tag-footer" href="https://github.com/abkvme/taler-explorer/releases" target="_blank" rel="noopener" title="View release notes" data-t-title="View release notes">{{buildVersion}}</a>
     <span class="sep">·</span>
     <a href="https://taler.tech" target="_blank" rel="noopener">taler.tech</a>
     <span class="sep">·</span>

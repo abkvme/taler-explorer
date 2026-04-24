@@ -1,9 +1,10 @@
 {{define "body"}}
 <section class="hero">
-  <h1>Large transactions</h1>
+  <h1 data-t="Large transactions">Large transactions</h1>
   <p class="subtitle">
-    Transactions moving more than <strong>{{fmtTLR .ThresholdLow}}</strong> {{ui.CoinSymbol}}.
-    Tiers:
+    <span data-t="Transactions moving more than">Transactions moving more than</span>
+    <strong>{{fmtTLR .ThresholdLow}}</strong> {{ui.CoinSymbol}}.
+    <span data-t="Tiers:">Tiers:</span>
     <span class="chip tier-low">&ge; {{fmtTLR .ThresholdLow}}</span>
     <span class="chip tier-mid">&ge; {{fmtTLR .ThresholdMid}}</span>
     <span class="chip tier-high">&ge; {{fmtTLR .ThresholdHigh}}</span>
@@ -15,11 +16,11 @@
     <table class="data-table movement-table">
       <thead>
         <tr>
-          <th>Time</th>
-          <th>Txid</th>
-          <th class="num">Total</th>
-          <th class="num">Largest output</th>
-          <th>Status</th>
+          <th data-t="Time">Time</th>
+          <th data-t="Txid">Txid</th>
+          <th class="num" data-t="Total">Total</th>
+          <th class="num" data-t="Largest output">Largest output</th>
+          <th data-t="Status">Status</th>
         </tr>
       </thead>
       <tbody id="movements-body"

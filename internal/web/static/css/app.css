@@ -69,10 +69,49 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
 }
 .site-header-top {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;   /* brand · lang · nav · search */
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
+
+/* Language switcher (between brand and nav) */
+.lang-switch { position: relative; }
+.lang-current {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  color: var(--fg); font: inherit;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; font-weight: 700; letter-spacing: .04em;
+  padding: 6px 10px; border-radius: 999px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.lang-current:hover { border-color: color-mix(in oklab, var(--accent) 55%, transparent); }
+.lang-caret { font-size: 9px; opacity: .6; }
+.lang-menu {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 4px;
+  list-style: none; margin: 0;
+  box-shadow: var(--shadow);
+  z-index: 30;
+  min-width: 160px;
+}
+.lang-menu li { margin: 0; }
+.lang-menu button {
+  width: 100%; text-align: left;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  background: transparent; border: 0; color: var(--fg);
+  padding: 6px 10px; border-radius: 7px;
+  font: inherit; font-size: 13px; cursor: pointer;
+  transition: background .12s;
+}
+.lang-menu button:hover { background: rgba(255,255,255,0.06); }
+.lang-menu button.active { background: color-mix(in oklab, var(--accent) 18%, transparent); color: var(--accent); }
+.lang-menu .lang-native { color: var(--fg-muted); font-size: 11px; font-weight: 500; }
 
 /* Search form */
 .search-form {
@@ -154,9 +193,10 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
 .nav a.active { color: var(--fg); background: color-mix(in oklab, var(--accent) 14%, transparent); }
 
 /* Six-tile header:
-   - 6 × 1 on wide screens (>= 1280px)
-   - 3 × 2 when 6 columns no longer fit (>= 700px)
-   - 2 × 3 on very narrow viewports (default)
+   - 6 × 1 on very wide screens (>= 1600px) — each tile still has room for
+     the sparkline + numeric value without ellipsis-truncating.
+   - 3 × 2 on typical laptops/desktops (>= 700px).
+   - 2 × 3 on very narrow viewports (default).
 */
 .header-stats {
   display: grid;
@@ -168,7 +208,7 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
 @media (min-width: 700px) {
   .header-stats { grid-template-columns: repeat(3, 1fr); gap: 10px; }
 }
-@media (min-width: 1280px) {
+@media (min-width: 1600px) {
   .header-stats { grid-template-columns: repeat(6, 1fr); gap: 10px; }
 }
 
@@ -555,6 +595,17 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
 }
 .tile-spark .u-wrap,
 .tile-spark canvas { display: block; }
+
+/* Shrink the inline sparkline as the header grid narrows, and hide it entirely
+   at the 2-col breakpoint so the hashrate value always fits. Thresholds match
+   the header-stats grid breakpoints above. */
+@media (max-width: 1599px) {
+  .network-tile { grid-template-columns: minmax(0, 1fr) minmax(50px, 80px); }
+}
+@media (max-width: 699px) {
+  .network-tile { grid-template-columns: 1fr; }
+  .network-tile .tile-spark { display: none; }
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {

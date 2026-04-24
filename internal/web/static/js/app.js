@@ -2,6 +2,106 @@
 // No framework, no build step.
 
 (function () {
+  // ==========================================================================
+  // i18n — client-only. Server stays monolingual English; JS swaps `data-t`
+  // nodes based on a per-language JSON catalog. Catalogs cached in
+  // localStorage so warm loads apply before first paint (see early-paint
+  // snippet in layout.html <head>).
+  // ==========================================================================
+  const I18N_SUPPORTED = ['en', 'be', 'ru', 'uk'];
+  const I18N_TTL_MS = 365 * 24 * 60 * 60 * 1000; // 1 year
+  const I18N_LANG_KEY = 'taler_lang';
+  const I18N_SET_AT_KEY = 'taler_lang_set_at';
+  const I18N_CACHE_PREFIX = 'taler_lang_cache_';
+
+  function resolveLang() {
+    try {
+      const stored = localStorage.getItem(I18N_LANG_KEY);
+      const setAt = parseInt(localStorage.getItem(I18N_SET_AT_KEY) || '0', 10);
+      if (stored && I18N_SUPPORTED.indexOf(stored) >= 0 && Date.now() - setAt <= I18N_TTL_MS) {
+        return stored;
+      }
+    } catch (_) {}
+    const prefs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']);
+    for (let i = 0; i < prefs.length; i++) {
+      const primary = String(prefs[i] || '').toLowerCase().split('-')[0];
+      if (I18N_SUPPORTED.indexOf(primary) >= 0) return primary;
+    }
+    return 'en';
+  }
+
+  let currentLang = resolveLang();
+  let currentCatalog = null;
+
+  function loadCachedCatalog(lang) {
+    try {
+      const raw = localStorage.getItem(I18N_CACHE_PREFIX + lang);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  }
+
+  async function fetchCatalog(lang) {
+    if (lang === 'en') return null;
+    const cached = loadCachedCatalog(lang);
+    if (cached) return cached;
+    try {
+      const res = await fetch('/static/i18n/' + lang + '.json', { cache: 'default' });
+      if (!res.ok) return null;
+      const j = await res.json();
+      try { localStorage.setItem(I18N_CACHE_PREFIX + lang, JSON.stringify(j)); } catch (_) {}
+      return j;
+    } catch (_) { return null; }
+  }
+
+  function translate(catalog, key) {
+    if (!catalog || !key) return key;
+    return (Object.prototype.hasOwnProperty.call(catalog, key) && catalog[key]) || key;
+  }
+
+  function applyLang(root) {
+    if (!root) return;
+    const cat = currentCatalog;
+    if (cat === null && currentLang === 'en') return; // nothing to do
+    const q = (sel) => (root.querySelectorAll ? root.querySelectorAll(sel) : []);
+    q('[data-t]').forEach((el) => {
+      const k = el.getAttribute('data-t');
+      const v = translate(cat, k);
+      if (el.textContent !== v) el.textContent = v;
+    });
+    q('[data-t-placeholder]').forEach((el) => {
+      el.setAttribute('placeholder', translate(cat, el.getAttribute('data-t-placeholder')));
+    });
+    q('[data-t-title]').forEach((el) => {
+      el.setAttribute('title', translate(cat, el.getAttribute('data-t-title')));
+    });
+    q('[data-t-aria-label]').forEach((el) => {
+      el.setAttribute('aria-label', translate(cat, el.getAttribute('data-t-aria-label')));
+    });
+  }
+
+  async function setLang(code) {
+    if (I18N_SUPPORTED.indexOf(code) < 0) return;
+    try {
+      localStorage.setItem(I18N_LANG_KEY, code);
+      localStorage.setItem(I18N_SET_AT_KEY, String(Date.now()));
+    } catch (_) {}
+    currentLang = code;
+    currentCatalog = code === 'en' ? null : await fetchCatalog(code);
+    document.documentElement.setAttribute('lang', code);
+    applyLang(document);
+  }
+  window.TalerI18n = { setLang, resolveLang, currentLang: () => currentLang };
+
+  // Kick off initial catalog load (no-op for EN; cached path is synchronous).
+  (async function initI18n() {
+    if (currentLang !== 'en') {
+      currentCatalog = loadCachedCatalog(currentLang) || await fetchCatalog(currentLang);
+      document.documentElement.setAttribute('lang', currentLang);
+      applyLang(document);
+    }
+  })();
+
+
   // Copy-to-clipboard for txids/addresses.
   document.addEventListener('click', function (ev) {
     const btn = ev.target.closest('.copy-btn');
@@ -192,8 +292,11 @@
 
   // Re-render the cached series whenever the header-stats partial is swapped
   // (every 10s) — the mount nodes are brand new each time.
+  // Also re-apply i18n over the swapped subtree so newly-inserted rows pick
+  // up the currently-selected language.
   document.body.addEventListener('htmx:afterSwap', function (ev) {
-    if (ev.detail.target && ev.detail.target.id === 'header-stats') {
+    const target = ev.detail && ev.detail.target;
+    if (target && target.id === 'header-stats') {
       if (lastSeries) {
         renderInto(document.getElementById('sparkline-mount'), lastSeries);
       }
@@ -201,6 +304,7 @@
         renderPriceInto(document.getElementById('price-spark'), lastPriceSeries);
       }
     }
+    if (target) applyLang(target);
   });
 
   window.addEventListener('resize', function () {

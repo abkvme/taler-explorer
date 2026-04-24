@@ -11,7 +11,7 @@
       <span class="flag">{{countryFlag $p.CountryCode}}</span>
       <span class="country-name">{{$p.Country}}</span>
     {{else}}
-      <span class="country-name muted">Unknown</span>
+      <span class="country-name muted" data-t="Unknown">Unknown</span>
     {{end}}
   </td>
   <td class="mono">{{cleanVersion $p.Subver | default "—"}}</td>

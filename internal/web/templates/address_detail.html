@@ -1,48 +1,48 @@
 {{define "body"}}
 {{$s := .Summary}}
 <section class="hero">
-  <h1>Address</h1>
+  <h1 data-t="Address">Address</h1>
   <p class="subtitle mono break-all">{{$s.Address}}</p>
 </section>
 
 <section class="summary-grid">
   <div class="card summary">
     <div class="kpi">{{fmtTLR $s.Received}}</div>
-    <div class="kpi-label">Received ({{ui.CoinSymbol}})</div>
+    <div class="kpi-label"><span data-t="Received">Received</span> ({{ui.CoinSymbol}})</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{fmtTLR $s.Sent}}</div>
-    <div class="kpi-label">Sent ({{ui.CoinSymbol}})</div>
+    <div class="kpi-label"><span data-t="Sent">Sent</span> ({{ui.CoinSymbol}})</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{fmtTLR (sub64 $s.Received $s.Sent)}}</div>
-    <div class="kpi-label">Net ({{ui.CoinSymbol}})</div>
+    <div class="kpi-label"><span data-t="Net">Net</span> ({{ui.CoinSymbol}})</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{fmtInt $s.TxCount}}</div>
-    <div class="kpi-label">Transactions</div>
+    <div class="kpi-label" data-t="Transactions">Transactions</div>
   </div>
 </section>
 
 <section class="card">
-  <h2 class="section-h">Transactions</h2>
+  <h2 class="section-h" data-t="Transactions">Transactions</h2>
   <div class="table-wrap">
     <table class="data-table tx-table">
       <thead>
         <tr>
-          <th>Time</th>
-          <th>Txid</th>
-          <th class="num">Ins</th>
-          <th class="num">Outs</th>
-          <th class="num">Total out ({{ui.CoinSymbol}})</th>
-          <th>Status</th>
+          <th data-t="Time">Time</th>
+          <th data-t="Txid">Txid</th>
+          <th class="num" data-t="Ins">Ins</th>
+          <th class="num" data-t="Outs">Outs</th>
+          <th class="num"><span data-t="Total out">Total out</span> ({{ui.CoinSymbol}})</th>
+          <th data-t="Status">Status</th>
         </tr>
       </thead>
       <tbody>
         {{range .Txs}}
         {{template "tx_row" (dict "Tx" . "GreenBelow" $.GreenBelow "YellowBelow" $.YellowBelow "RedBelow" $.RedBelow)}}
         {{else}}
-        <tr><td colspan="6" class="muted center">No transactions indexed for this address yet.</td></tr>
+        <tr><td colspan="6" class="muted center" data-t="No transactions indexed for this address yet.">No transactions indexed for this address yet.</td></tr>
         {{end}}
       </tbody>
     </table>
@@ -51,24 +51,24 @@
   {{if gt .TotalPages 1}}
   <nav class="pagination" aria-label="pagination">
     {{if .HasPrev}}
-      <a class="page-link" href="?page=1">« First</a>
-      <a class="page-link" href="?page={{.PrevPage}}">‹ Prev</a>
+      <a class="page-link" href="?page=1">« <span data-t="First">First</span></a>
+      <a class="page-link" href="?page={{.PrevPage}}">‹ <span data-t="Prev">Prev</span></a>
     {{else}}
-      <span class="page-link disabled">« First</span>
-      <span class="page-link disabled">‹ Prev</span>
+      <span class="page-link disabled">« <span data-t="First">First</span></span>
+      <span class="page-link disabled">‹ <span data-t="Prev">Prev</span></span>
     {{end}}
     {{range pageRange .Page .TotalPages 3}}
       {{if eq . $.Page}}<span class="page-link current">{{.}}</span>
       {{else}}<a class="page-link" href="?page={{.}}">{{.}}</a>{{end}}
     {{end}}
     {{if .HasNext}}
-      <a class="page-link" href="?page={{.NextPage}}">Next ›</a>
-      <a class="page-link" href="?page={{.TotalPages}}">Last »</a>
+      <a class="page-link" href="?page={{.NextPage}}"><span data-t="Next">Next</span> ›</a>
+      <a class="page-link" href="?page={{.TotalPages}}"><span data-t="Last">Last</span> »</a>
     {{else}}
-      <span class="page-link disabled">Next ›</span>
-      <span class="page-link disabled">Last »</span>
+      <span class="page-link disabled"><span data-t="Next">Next</span> ›</span>
+      <span class="page-link disabled"><span data-t="Last">Last</span> »</span>
     {{end}}
-    <span class="page-info">Page {{.Page}} / {{.TotalPages}} · {{.PerPage}} per page</span>
+    <span class="page-info"><span data-t="Page">Page</span> {{.Page}} / {{.TotalPages}} · {{.PerPage}} <span data-t="per page">per page</span></span>
   </nav>
   {{end}}
 </section>

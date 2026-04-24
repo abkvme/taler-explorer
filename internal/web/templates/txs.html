@@ -1,9 +1,9 @@
 {{define "body"}}
 <section class="hero">
-  <h1>Transactions</h1>
+  <h1 data-t="Transactions">Transactions</h1>
   <p class="subtitle">
-    {{fmtInt .Total}} indexed.
-    Amount tiers:
+    {{fmtInt .Total}} <span data-t="indexed.">indexed.</span>
+    <span data-t="Amount tiers:">Amount tiers:</span>
     <span class="amount-chip amount-blue">&lt; {{fmtTLR .GreenBelow}}</span>
     <span class="amount-chip amount-green">&lt; {{fmtTLR .YellowBelow}}</span>
     <span class="amount-chip amount-yellow">&lt; {{fmtTLR .RedBelow}}</span>
@@ -16,12 +16,12 @@
     <table class="data-table tx-table">
       <thead>
         <tr>
-          <th>Time</th>
-          <th>Txid</th>
-          <th class="num">Ins</th>
-          <th class="num">Outs</th>
-          <th class="num">Value ({{ui.CoinSymbol}})</th>
-          <th>Status</th>
+          <th data-t="Time">Time</th>
+          <th data-t="Txid">Txid</th>
+          <th class="num" data-t="Ins">Ins</th>
+          <th class="num" data-t="Outs">Outs</th>
+          <th class="num"><span data-t="Value">Value</span> ({{ui.CoinSymbol}})</th>
+          <th data-t="Status">Status</th>
         </tr>
       </thead>
       <tbody id="tx-body"

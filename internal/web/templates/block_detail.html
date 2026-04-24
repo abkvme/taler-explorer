@@ -1,51 +1,51 @@
 {{define "body"}}
 {{$b := .Block}}
 <section class="hero">
-  <h1>Block #{{fmtInt $b.Height}}</h1>
+  <h1><span data-t="Block">Block</span> #{{fmtInt $b.Height}}</h1>
   <p class="subtitle mono">{{$b.Hash}}</p>
 </section>
 
 <section class="summary-grid">
   <div class="card summary">
     <div class="kpi">{{if $b.IsPoS}}PoS{{else}}PoW{{end}}</div>
-    <div class="kpi-label">Proof type</div>
+    <div class="kpi-label" data-t="Proof type">Proof type</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{$b.TxCount}}</div>
-    <div class="kpi-label">Transactions</div>
+    <div class="kpi-label" data-t="Transactions">Transactions</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{fmtSize $b.Size}}</div>
-    <div class="kpi-label">Size</div>
+    <div class="kpi-label" data-t="Size">Size</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{fmtDiff $b.Difficulty}}</div>
-    <div class="kpi-label">Difficulty</div>
+    <div class="kpi-label" data-t="Difficulty">Difficulty</div>
   </div>
 </section>
 
 <section class="card detail-card">
   <dl class="kv-list">
-    <dt>Time</dt><dd class="mono">{{localTime $b.Time}}</dd>
-    <dt>Bits</dt><dd class="mono">{{$b.Bits}}</dd>
-    <dt>Previous block</dt><dd class="mono"><a href="/blocks/{{sub $b.Height 1}}">{{truncMiddle $b.PrevHash 12}}</a></dd>
-    {{if $b.MinerAddress}}<dt>Miner address</dt><dd class="mono">{{$b.MinerAddress}}</dd>{{end}}
-    {{if $b.StakerAddress}}<dt>Staker address</dt><dd class="mono">{{$b.StakerAddress}}</dd>{{end}}
+    <dt data-t="Time">Time</dt><dd class="mono">{{localTime $b.Time}}</dd>
+    <dt data-t="Bits">Bits</dt><dd class="mono">{{$b.Bits}}</dd>
+    <dt data-t="Previous block">Previous block</dt><dd class="mono"><a href="/blocks/{{sub $b.Height 1}}">{{truncMiddle $b.PrevHash 12}}</a></dd>
+    {{if $b.MinerAddress}}<dt data-t="Miner address">Miner address</dt><dd class="mono">{{$b.MinerAddress}}</dd>{{end}}
+    {{if $b.StakerAddress}}<dt data-t="Staker address">Staker address</dt><dd class="mono">{{$b.StakerAddress}}</dd>{{end}}
   </dl>
 </section>
 
 <section class="card">
-  <h2 class="section-h">Transactions in this block</h2>
+  <h2 class="section-h" data-t="Transactions in this block">Transactions in this block</h2>
   <div class="table-wrap">
     <table class="data-table tx-table">
       <thead>
         <tr>
           <th class="num">#</th>
-          <th>Txid</th>
-          <th class="num">Ins</th>
-          <th class="num">Outs</th>
-          <th class="num">Value ({{ui.CoinSymbol}})</th>
-          <th>Role</th>
+          <th data-t="Txid">Txid</th>
+          <th class="num" data-t="Ins">Ins</th>
+          <th class="num" data-t="Outs">Outs</th>
+          <th class="num"><span data-t="Value">Value</span> ({{ui.CoinSymbol}})</th>
+          <th data-t="Role">Role</th>
         </tr>
       </thead>
       <tbody>
@@ -57,8 +57,8 @@
           <td class="num">{{.VoutCount}}</td>
           <td class="num mono {{txTier .TotalOut $.GreenBelow $.YellowBelow $.RedBelow}}">{{fmtTLR .TotalOut}}</td>
           <td>
-            {{if .IsCoinbase}}<span class="badge pow">block reward</span>{{end}}
-            {{if .IsCoinstake}}<span class="badge coinstake">stake reward</span>{{end}}
+            {{if .IsCoinbase}}<span class="badge pow" data-t="block reward">block reward</span>{{end}}
+            {{if .IsCoinstake}}<span class="badge coinstake" data-t="stake reward">stake reward</span>{{end}}
           </td>
         </tr>
         {{end}}

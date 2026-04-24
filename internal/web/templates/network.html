@@ -1,24 +1,27 @@
 {{define "body"}}
 <section class="hero">
-  <h1>Network</h1>
-  <p class="subtitle">Every peer seen in the last {{fmtHours .HistoryHours}}. Green dot = connected right now.</p>
+  <h1 data-t="Network">Network</h1>
+  <p class="subtitle">
+    <span data-t="Every peer seen in the last">Every peer seen in the last</span> {{fmtHours .HistoryHours}}.
+    <span data-t="Green dot = connected right now.">Green dot = connected right now.</span>
+  </p>
 </section>
 
 <section class="summary-grid">
   <div class="card summary">
     <div class="kpi">{{.LiveCount}}</div>
-    <div class="kpi-label">Connected now</div>
+    <div class="kpi-label" data-t="Connected now">Connected now</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{len .Peers}}</div>
-    <div class="kpi-label">Seen in {{fmtHours .HistoryHours}}</div>
+    <div class="kpi-label"><span data-t="Seen in">Seen in</span> {{fmtHours .HistoryHours}}</div>
   </div>
   <div class="card summary">
     <div class="kpi">{{.Inbound}} / {{.Outbound}}</div>
-    <div class="kpi-label">Inbound / Outbound (live)</div>
+    <div class="kpi-label" data-t="Inbound / Outbound (live)">Inbound / Outbound (live)</div>
   </div>
   <div class="card summary versions">
-    <div class="kpi-label">Versions</div>
+    <div class="kpi-label" data-t="Versions">Versions</div>
     <ul class="version-list">
       {{range $v, $c := .Versions}}<li><span class="version-tag">{{cleanVersion $v | default "unknown"}}</span><span class="version-count">{{$c}}</span></li>{{end}}
     </ul>
@@ -27,16 +30,16 @@
 
 <section class="card" x-data="{ view: 'list' }">
   <div class="card-toolbar">
-    <div class="view-switch" role="tablist" aria-label="View">
-      <button type="button" role="tab" :aria-selected="view==='list'" :class="{active: view==='list'}" @click="view='list'">List</button>
-      <button type="button" role="tab" :aria-selected="view==='map'" :class="{active: view==='map'}" @click="view='map'; $nextTick(() => window.__initPeerMap && window.__initPeerMap())">Map</button>
+    <div class="view-switch" role="tablist" aria-label="View" data-t-aria-label="View">
+      <button type="button" role="tab" :aria-selected="view==='list'" :class="{active: view==='list'}" @click="view='list'" data-t="List">List</button>
+      <button type="button" role="tab" :aria-selected="view==='map'" :class="{active: view==='map'}" @click="view='map'; $nextTick(() => window.__initPeerMap && window.__initPeerMap())" data-t="Map">Map</button>
     </div>
     <button class="btn-refresh"
             hx-get="/_partial/peers"
             hx-target="#peers-body"
             hx-swap="innerHTML"
             hx-indicator="#peers-refresh-spinner">
-      <span class="refresh-glyph">↻</span> Refresh
+      <span class="refresh-glyph">↻</span> <span data-t="Refresh">Refresh</span>
       <span id="peers-refresh-spinner" class="htmx-indicator">…</span>
     </button>
   </div>
@@ -46,11 +49,11 @@
       <table class="data-table peer-table">
         <thead>
           <tr>
-            <th>Address</th>
-            <th>Country</th>
-            <th>Version</th>
-            <th class="num">Height</th>
-            <th class="num">Last seen</th>
+            <th data-t="Address">Address</th>
+            <th data-t="Country">Country</th>
+            <th data-t="Version">Version</th>
+            <th class="num" data-t="Height">Height</th>
+            <th class="num" data-t="Last seen">Last seen</th>
           </tr>
         </thead>
         <tbody id="peers-body">
@@ -63,7 +66,7 @@
   </div>
 
   <div x-show="view === 'map'" x-cloak>
-    <div id="peer-map" class="peer-map" aria-label="Peer world map"></div>
+    <div id="peer-map" class="peer-map" aria-label="Peer world map" data-t-aria-label="Peer world map"></div>
   </div>
 </section>
 

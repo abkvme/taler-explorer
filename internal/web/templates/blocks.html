@@ -1,7 +1,7 @@
 {{define "body"}}
 <section class="hero">
-  <h1>Latest blocks</h1>
-  <p class="subtitle">Newest blocks at the top. Click any row for block details.</p>
+  <h1 data-t="Latest blocks">Latest blocks</h1>
+  <p class="subtitle" data-t="Newest blocks at the top. Click any row for block details.">Newest blocks at the top. Click any row for block details.</p>
 </section>
 
 <section class="card">
@@ -9,13 +9,13 @@
     <table class="data-table block-table">
       <thead>
         <tr>
-          <th class="num">Height</th>
-          <th>Time</th>
-          <th>Type</th>
-          <th class="num">Txs</th>
-          <th class="num">Size</th>
-          <th class="num">Difficulty</th>
-          <th>Hash</th>
+          <th class="num" data-t="Height">Height</th>
+          <th data-t="Time">Time</th>
+          <th data-t="Type">Type</th>
+          <th class="num" data-t="Txs">Txs</th>
+          <th class="num" data-t="Size">Size</th>
+          <th class="num" data-t="Difficulty">Difficulty</th>
+          <th data-t="Hash">Hash</th>
         </tr>
       </thead>
       <tbody id="blocks-body"

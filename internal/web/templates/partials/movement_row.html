@@ -4,7 +4,7 @@
   <td class="mono small-time">{{localTime $tx.Time}}</td>
   <td class="t-txid">
     <code class="mono" title="{{$tx.Txid}}"><a class="cell-link" href="/txs/{{$tx.Txid}}">{{truncMiddle $tx.Txid 10}}</a></code>
-    <button class="copy-btn" data-copy="{{$tx.Txid}}" title="Copy txid" aria-label="Copy txid">⧉</button>
+    <button class="copy-btn" data-copy="{{$tx.Txid}}" title="Copy txid" aria-label="Copy txid" data-t-title="Copy txid" data-t-aria-label="Copy txid">⧉</button>
   </td>
   <td class="num mono">{{fmtTLRExact $tx.TotalOut}}</td>
   <td class="num mono bold">{{fmtTLRExact $tx.MaxVout}}</td>
@@ -12,7 +12,7 @@
     {{if $tx.BlockHeight}}
       <a class="badge confirmed" href="/blocks/{{deref $tx.BlockHeight}}" onclick="event.stopPropagation()">#{{fmtInt (deref $tx.BlockHeight)}}</a>
     {{else}}
-      <span class="badge mempool">mempool</span>
+      <span class="badge mempool" data-t="mempool">mempool</span>
     {{end}}
   </td>
 </tr>

@@ -2,11 +2,11 @@
 {{if gt .TotalPages 1}}
 <nav class="pagination" aria-label="pagination">
   {{if .HasPrev}}
-    <a class="page-link" href="/txs?page=1">« First</a>
-    <a class="page-link" href="/txs?page={{.PrevPage}}">‹ Prev</a>
+    <a class="page-link" href="/txs?page=1">« <span data-t="First">First</span></a>
+    <a class="page-link" href="/txs?page={{.PrevPage}}">‹ <span data-t="Prev">Prev</span></a>
   {{else}}
-    <span class="page-link disabled">« First</span>
-    <span class="page-link disabled">‹ Prev</span>
+    <span class="page-link disabled">« <span data-t="First">First</span></span>
+    <span class="page-link disabled">‹ <span data-t="Prev">Prev</span></span>
   {{end}}
   {{range pageRange .Page .TotalPages 3}}
     {{if eq . $.Page}}
@@ -16,13 +16,13 @@
     {{end}}
   {{end}}
   {{if .HasNext}}
-    <a class="page-link" href="/txs?page={{.NextPage}}">Next ›</a>
-    <a class="page-link" href="/txs?page={{.TotalPages}}">Last »</a>
+    <a class="page-link" href="/txs?page={{.NextPage}}"><span data-t="Next">Next</span> ›</a>
+    <a class="page-link" href="/txs?page={{.TotalPages}}"><span data-t="Last">Last</span> »</a>
   {{else}}
-    <span class="page-link disabled">Next ›</span>
-    <span class="page-link disabled">Last »</span>
+    <span class="page-link disabled"><span data-t="Next">Next</span> ›</span>
+    <span class="page-link disabled"><span data-t="Last">Last</span> »</span>
   {{end}}
-  <span class="page-info">Page {{.Page}} / {{.TotalPages}} · {{.PerPage}} per page</span>
+  <span class="page-info"><span data-t="Page">Page</span> {{.Page}} / {{.TotalPages}} · {{.PerPage}} <span data-t="per page">per page</span></span>
 </nav>
 {{end}}
 {{end}}
