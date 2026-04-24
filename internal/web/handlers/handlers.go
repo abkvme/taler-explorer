@@ -19,11 +19,12 @@ import (
 )
 
 type Handlers struct {
-	Store *store.Store
-	Tpl   *Templates
-	Cfg   *config.Config
-	Log   *slog.Logger
-	RPC   *rpc.Client // optional; used as fallback when the DB lacks tx inputs
+	Store   *store.Store
+	Tpl     *Templates
+	Cfg     *config.Config
+	Log     *slog.Logger
+	RPC     *rpc.Client // optional; used as fallback when the DB lacks tx inputs
+	Version string      // baked in at build time via -X main.version
 }
 
 type pageData struct {

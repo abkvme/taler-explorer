@@ -527,6 +527,16 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
 .site-footer .gh-link { display: inline-flex; align-items: center; gap: 4px; color: var(--fg-muted); }
 .site-footer .gh-link:hover { color: var(--accent); text-decoration: none; }
 .site-footer .gh-icon { vertical-align: middle; }
+.site-footer .version-tag-footer {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: var(--fg-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-strong);
+  padding: 1px 6px; border-radius: 999px;
+  letter-spacing: 0;
+}
+.site-footer .version-tag-footer:hover { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 45%, transparent); text-decoration: none; }
 
 /* ---------- Network tile: label/value on the left, 24h sparkline on the right ---------- */
 .network-tile {

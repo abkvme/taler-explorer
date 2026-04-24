@@ -57,8 +57,16 @@ BIN_DIR="${BIN_DIR:-./.bin}"
 mkdir -p "$BIN_DIR"
 BIN="$BIN_DIR/taler-explorer"
 
-echo "Building $BIN${RACE_FLAG:+ (race)}..."
-go build $RACE_FLAG -o "$BIN" ./cmd/taler-explorer
+# Derive a version string for the binary:
+#   - in a git checkout, use `git describe` (e.g. v0.1.0, v0.1.0-2-gabcdef-dirty)
+#   - otherwise "dev"
+VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "dev")
+[[ -z "$VERSION" ]] && VERSION="dev"
+
+echo "Building $BIN${RACE_FLAG:+ (race)} ($VERSION)..."
+go build $RACE_FLAG \
+  -ldflags "-X main.version=$VERSION" \
+  -o "$BIN" ./cmd/taler-explorer
 
 # 4. Pre-flight RPC probe so config mistakes surface before we start workers.
 RPC_URL=$(awk -F '=' '/^[[:space:]]*url[[:space:]]*=/{gsub(/[" ]/,"",$2); print $2; exit}' config.toml || true)

@@ -13,16 +13,18 @@ import (
 )
 
 type Templates struct {
-	UI    config.UIConfig
-	pages map[string]*template.Template
-	parts map[string]*template.Template
+	UI      config.UIConfig
+	Version string
+	pages   map[string]*template.Template
+	parts   map[string]*template.Template
 }
 
-func LoadTemplates(efs embed.FS, ui config.UIConfig) (*Templates, error) {
+func LoadTemplates(efs embed.FS, ui config.UIConfig, version string) (*Templates, error) {
 	t := &Templates{
-		UI:    ui,
-		pages: map[string]*template.Template{},
-		parts: map[string]*template.Template{},
+		UI:      ui,
+		Version: version,
+		pages:   map[string]*template.Template{},
+		parts:   map[string]*template.Template{},
 	}
 	funcs := t.funcMap()
 
@@ -96,6 +98,7 @@ func (t *Templates) funcMap() template.FuncMap {
 		"fmtPrice":     fmtPrice,
 		"fmtTrend":     fmtTrend,
 		"fmtHours":     fmtHours,
+		"buildVersion": func() string { return t.Version },
 	}
 }
 

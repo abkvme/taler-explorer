@@ -20,20 +20,21 @@ import (
 var embedded embed.FS
 
 type Server struct {
-	cfg   *config.Config
-	store *store.Store
-	log   *slog.Logger
-	tpl   *handlers.Templates
-	rpc   *rpc.Client
-	mux   http.Handler
+	cfg     *config.Config
+	store   *store.Store
+	log     *slog.Logger
+	tpl     *handlers.Templates
+	rpc     *rpc.Client
+	version string
+	mux     http.Handler
 }
 
-func New(cfg *config.Config, s *store.Store, log *slog.Logger, rpcClient *rpc.Client) (*Server, error) {
-	tpl, err := handlers.LoadTemplates(embedded, cfg.UI)
+func New(cfg *config.Config, s *store.Store, log *slog.Logger, rpcClient *rpc.Client, version string) (*Server, error) {
+	tpl, err := handlers.LoadTemplates(embedded, cfg.UI, version)
 	if err != nil {
 		return nil, err
 	}
-	srv := &Server{cfg: cfg, store: s, log: log, tpl: tpl, rpc: rpcClient}
+	srv := &Server{cfg: cfg, store: s, log: log, tpl: tpl, rpc: rpcClient, version: version}
 	srv.mux = srv.buildRouter()
 	return srv, nil
 }
@@ -57,7 +58,7 @@ func (s *Server) buildRouter() http.Handler {
 		http.ServeFileFS(w, req, staticFS, "favicon.ico")
 	})
 
-	h := &handlers.Handlers{Store: s.store, Tpl: s.tpl, Cfg: s.cfg, Log: s.log, RPC: s.rpc}
+	h := &handlers.Handlers{Store: s.store, Tpl: s.tpl, Cfg: s.cfg, Log: s.log, RPC: s.rpc, Version: s.version}
 
 	r.Get("/", h.Blocks)
 	r.Get("/txs", h.Transactions)
