@@ -1,19 +1,33 @@
 # syntax=docker/dockerfile:1.7
 
 # --- build stage --------------------------------------------------------------
-FROM golang:1.25-alpine AS build
+# Debian-based Go image — broader tooling and fewer musl edge-cases than -alpine.
+#
+# Pinning --platform=$BUILDPLATFORM keeps the Go compiler running natively on the
+# host architecture (no QEMU tax). The GOOS/GOARCH vars below drive Go's own
+# cross-compile to TARGETPLATFORM. On a multi-arch buildx run this turns a
+# ~150s-per-foreign-arch step into ~15s each.
+FROM --platform=$BUILDPLATFORM golang:1.25-bookworm AS build
 WORKDIR /src
 
-# Cache deps in a separate layer.
+# Print versions into the build log so any surprise toolchain mismatch is
+# immediately visible in CI.
+RUN set -eux; \
+    go version; \
+    go env GOVERSION GOROOT GOPATH GOCACHE GOOS GOARCH CGO_ENABLED
+
+# Resolve deps first so the COPY . . below doesn't invalidate the mod cache.
 COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
+RUN go mod download
 
 COPY . .
+
 ARG VERSION=dev
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg/mod \
-    CGO_ENABLED=0 go build \
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
+RUN set -eux; \
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+    go build \
         -trimpath \
         -ldflags "-s -w -X main.version=${VERSION}" \
         -o /out/taler-explorer ./cmd/taler-explorer
