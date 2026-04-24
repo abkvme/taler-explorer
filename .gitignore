@@ -1,7 +1,9 @@
 # Build output
 /.bin/
 /dist/
-taler-explorer
+# Anchored so we only ignore the binary at the repo root, NOT the source
+# package at cmd/taler-explorer/.
+/taler-explorer
 *.exe
 
 # Local SQLite DB + sidecars
