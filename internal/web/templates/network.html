@@ -20,7 +20,9 @@
       </span>
     </div>
   </div>
-  <div class="card summary versions" x-data="{ open: false }">
+  <div class="card summary versions"
+       x-data="{ open: false }"
+       x-on:keydown.escape.window="open = false">
     <div class="kpi-label">
       <span data-t="Countries">Countries</span>
       <span class="count-badge">{{len .Countries}}</span>
@@ -29,20 +31,57 @@
       {{range $i, $c := .Countries}}{{if lt $i 5}}<li><span class="version-tag"><span class="flag">{{countryFlag $c.Code}}</span> {{$c.Name}}</span><span class="version-count">{{$c.Count}}</span></li>{{end}}{{end}}
     </ul>
     {{if gt (len .Countries) 5}}
-    <button type="button" class="see-all-btn" @click="open = true">
+    <button type="button" class="see-all-btn" @click="open = true; document.body.style.overflow = 'hidden'">
       <span data-t="See all">See all</span> ({{len .Countries}})
     </button>
-    <div x-show="open" x-cloak class="modal-backdrop" @click.self="open = false" @keydown.escape.window="open = false">
-      <div class="modal" role="dialog" aria-modal="true">
-        <header class="modal-header">
-          <h3 class="modal-title"><span data-t="Countries">Countries</span> <span class="count-badge">{{len .Countries}}</span></h3>
-          <button type="button" class="modal-close" @click="open = false" aria-label="Close" data-t-aria-label="Close">×</button>
-        </header>
-        <ul class="version-list compact modal-list">
-          {{range .Countries}}<li><span class="version-tag"><span class="flag">{{countryFlag .Code}}</span> {{.Name}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
-        </ul>
+
+    <!-- Teleported to <body> so the modal escapes any ancestor stacking
+         / overflow context and sits cleanly on top of the whole page. -->
+    <template x-teleport="body">
+      <div x-show="open"
+           x-transition:enter="m-anim-enter"
+           x-transition:enter-start="m-anim-enter-from"
+           x-transition:enter-end="m-anim-enter-to"
+           x-transition:leave="m-anim-leave"
+           x-transition:leave-start="m-anim-leave-from"
+           x-transition:leave-end="m-anim-leave-to"
+           x-cloak
+           class="m-overlay"
+           role="dialog"
+           aria-modal="true"
+           @click.self="open = false; document.body.style.overflow = ''">
+        <div class="m-card">
+          <header class="m-head">
+            <h3 class="m-title">
+              <span data-t="Countries">Countries</span>
+              <span class="count-badge">{{len .Countries}}</span>
+            </h3>
+            <button type="button" class="m-x"
+                    @click="open = false; document.body.style.overflow = ''"
+                    aria-label="Close" data-t-aria-label="Close">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18"/>
+              </svg>
+            </button>
+          </header>
+          <div class="m-body">
+            <ul class="m-list">
+              {{range .Countries}}
+              <li class="m-row">
+                <span class="m-row-label">
+                  <span class="flag">{{countryFlag .Code}}</span>
+                  <span class="m-row-name">{{.Name}}</span>
+                  <span class="m-row-code">{{.Code}}</span>
+                </span>
+                <span class="m-row-count">{{.Count}}</span>
+              </li>
+              {{end}}
+            </ul>
+          </div>
+        </div>
       </div>
-    </div>
+    </template>
     {{end}}
   </div>
   <div class="card summary versions">

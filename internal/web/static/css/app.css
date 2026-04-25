@@ -383,48 +383,131 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
   border-color: color-mix(in oklab, var(--accent) 50%, transparent);
 }
 
-/* Modal backdrop + card for "See all" popups. */
-.modal-backdrop {
+/* ----- Modal: full-viewport overlay teleported to <body> ------------------ */
+.m-overlay {
   position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  z-index: 9999;
   display: flex; align-items: center; justify-content: center;
-  z-index: 1000;
+  background: rgba(8, 10, 16, 0.72);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
   padding: 24px;
-  backdrop-filter: blur(2px);
 }
-.modal {
-  background: var(--bg-1);
-  border: 1px solid var(--border-strong);
-  border-radius: 14px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  max-width: 460px;
+.m-card {
   width: 100%;
-  max-height: 80vh;
+  max-width: 560px;
+  max-height: min(86vh, 720px);
+  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
   display: flex; flex-direction: column;
   overflow: hidden;
 }
-.modal-header {
+.m-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px;
+  padding: 18px 22px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.modal-title {
-  font-size: 15px; font-weight: 700; margin: 0;
-  display: inline-flex; align-items: center; gap: 8px;
-}
-.modal-close {
-  background: transparent; border: 0;
-  color: var(--fg-muted);
-  font-size: 24px; line-height: 1;
-  cursor: pointer; padding: 0 4px;
-  transition: color .15s;
-}
-.modal-close:hover { color: var(--fg); }
-.modal-list {
+.m-title {
+  font-size: 18px; font-weight: 700;
   margin: 0;
-  padding: 8px 18px 18px;
+  display: inline-flex; align-items: center; gap: 10px;
+  letter-spacing: -0.01em;
+}
+.m-x {
+  background: transparent; border: 0; color: var(--fg-muted);
+  width: 36px; height: 36px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .15s, color .15s, transform .15s;
+}
+.m-x:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--fg);
+  transform: rotate(90deg);
+}
+.m-body {
   overflow-y: auto;
-  max-height: calc(80vh - 60px);
+  padding: 6px 12px 18px;
+  /* Custom scrollbar matching the dark theme */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.m-body::-webkit-scrollbar { width: 8px; }
+.m-body::-webkit-scrollbar-track { background: transparent; }
+.m-body::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.m-body::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--accent) 60%, var(--border-strong));
+  background-clip: content-box;
+}
+.m-list { list-style: none; margin: 0; padding: 0; }
+.m-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px;
+  padding: 12px 12px;
+  border-radius: 10px;
+  transition: background .12s;
+}
+.m-row + .m-row { border-top: 1px solid var(--border); border-radius: 0; }
+.m-row:hover { background: rgba(255,255,255,0.04); }
+.m-row-label {
+  display: inline-flex; align-items: center; gap: 12px;
+  min-width: 0; flex: 1;
+}
+.m-row-name {
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.m-row-code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: var(--fg-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.04em;
+}
+.m-row-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent);
+  min-width: 32px;
+  text-align: right;
+}
+
+/* Alpine x-transition classes — fade + scale */
+.m-anim-enter { transition: opacity .18s ease-out, transform .18s ease-out; }
+.m-anim-enter-from { opacity: 0; }
+.m-anim-enter-to   { opacity: 1; }
+.m-anim-leave { transition: opacity .14s ease-in; }
+.m-anim-leave-from { opacity: 1; }
+.m-anim-leave-to   { opacity: 0; }
+.m-anim-enter .m-card,
+.m-anim-leave .m-card { transition: transform .2s ease-out; }
+.m-anim-enter-from .m-card { transform: scale(0.94) translateY(6px); }
+.m-anim-enter-to   .m-card { transform: scale(1) translateY(0); }
+.m-anim-leave-from .m-card { transform: scale(1); }
+.m-anim-leave-to   .m-card { transform: scale(0.96); }
+
+@media (max-width: 600px) {
+  .m-overlay { padding: 12px; }
+  .m-card { max-height: 92vh; border-radius: 14px; }
+  .m-head { padding: 14px 16px; }
+  .m-title { font-size: 16px; }
 }
 
 /* Total-count pill rendered next to a KPI label (Countries, Versions, etc.) */
