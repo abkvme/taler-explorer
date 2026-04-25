@@ -12,14 +12,14 @@
     <div class="kpi-label" data-t="Total peers seen">Total peers seen</div>
   </div>
   <div class="card summary versions">
-    <div class="kpi-label" data-t="Versions">Versions</div>
-    <ul class="version-list">
-      {{range $v, $c := .Versions}}<li><span class="version-tag">{{cleanVersion $v | default "unknown"}}</span><span class="version-count">{{$c}}</span></li>{{end}}
+    <div class="kpi-label"><span data-t="Versions">Versions</span> <span class="kpi-sub">({{len .Versions}})</span></div>
+    <ul class="version-list compact">
+      {{range .Versions}}<li><span class="version-tag">{{.Family}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
     </ul>
   </div>
   <div class="card summary versions">
-    <div class="kpi-label" data-t="Countries">Countries</div>
-    <ul class="version-list">
+    <div class="kpi-label"><span data-t="Countries">Countries</span> <span class="kpi-sub">({{len .Countries}})</span></div>
+    <ul class="version-list compact">
       {{range .Countries}}<li><span class="version-tag"><span class="flag">{{countryFlag .Code}}</span> {{.Name}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
     </ul>
   </div>
@@ -83,19 +83,16 @@
         maxZoom: 10,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(map);
-      // Single neutral colour — no live/offline distinction. Marker size and
-      // colour are uniform; the only thing the map conveys is geographic
-      // distribution of the 30-day peer set.
-      var fill = '#c9a24b'; // accent gold, easy to spot on the dark gray tiles
+      // Each detected peer is rendered as a small Taler-coin icon on the map.
+      var talerIcon = L.icon({
+        iconUrl:    '/static/img/taler_circular.png',
+        iconSize:   [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -10],
+        className:  'peer-marker-icon'
+      });
       points.forEach(function (p) {
-        var marker = L.circleMarker([p.lat, p.lng], {
-          radius: 4,
-          color: '#0b0d12',
-          weight: 1.5,
-          fillColor: fill,
-          fillOpacity: 1,
-          opacity: 1,
-        });
+        var marker = L.marker([p.lat, p.lng], { icon: talerIcon });
         marker.bindPopup(
           '<strong>' + (p.addr || '') + '</strong><br>' +
           (p.country || 'Unknown') + (p.code ? ' (' + p.code + ')' : '') + '<br>' +

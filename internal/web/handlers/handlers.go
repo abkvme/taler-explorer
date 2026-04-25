@@ -347,8 +347,11 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		peers = append(selfPeers, peers...)
 	}
 
-	versions := map[string]int{}
-	// countries: code -> {name, count}; rendered as a sorted slice below.
+	// versions/countries are accumulated as maps and converted to sorted
+	// slices below so the template renders in a deterministic, count-desc
+	// order. "unknown" entries are intentionally dropped from the versions
+	// summary — they don't carry any actionable info.
+	versionsMap := map[string]int{}
 	type ctyAcc struct {
 		Name  string
 		Count int
@@ -365,11 +368,9 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 	}
 	points := make([]mapPoint, 0, len(peers))
 	for _, p := range peers {
-		v := versionFamily(p.Subver)
-		if v == "" {
-			v = "unknown"
+		if v := versionFamily(p.Subver); v != "" {
+			versionsMap[v]++
 		}
-		versions[v]++
 		if p.CountryCode != "" {
 			c := countriesAcc[p.CountryCode]
 			if c == nil {
@@ -411,6 +412,22 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 			return countries[i].Count > countries[j].Count
 		}
 		return countries[i].Name < countries[j].Name
+	})
+
+	// Sort versions by count desc, then by family asc.
+	type VersionStat struct {
+		Family string
+		Count  int
+	}
+	versions := make([]VersionStat, 0, len(versionsMap))
+	for k, v := range versionsMap {
+		versions = append(versions, VersionStat{Family: k, Count: v})
+	}
+	sort.Slice(versions, func(i, j int) bool {
+		if versions[i].Count != versions[j].Count {
+			return versions[i].Count > versions[j].Count
+		}
+		return versions[i].Family < versions[j].Family
 	})
 
 	h.render(w, r, "network.html", pageData{
@@ -643,13 +660,14 @@ func (h *Handlers) PeersPartial(w http.ResponseWriter, r *http.Request) {
 }
 
 // PriceSeries serves a price history for the configured pair as JSON for uPlot.
-// Window defaults to 24 h.
+// Window is 7 days — Taler trades are infrequent, so a longer window shows a
+// more meaningful trend than 24h would.
 func (h *Handlers) PriceSeries(w http.ResponseWriter, r *http.Request) {
 	if !h.Cfg.Prices.Enabled {
 		_, _ = w.Write([]byte(`[[],[]]`))
 		return
 	}
-	since := time.Now().Add(-24 * time.Hour).Unix()
+	since := time.Now().Add(-7 * 24 * time.Hour).Unix()
 	rows, err := h.Store.PriceSeries(r.Context(), h.Cfg.Prices.Pair, since)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

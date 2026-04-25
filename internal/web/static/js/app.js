@@ -58,10 +58,35 @@
     return (Object.prototype.hasOwnProperty.call(catalog, key) && catalog[key]) || key;
   }
 
+  // Belarus white-red-white flag: shown only when the user's UI language is
+  // Belarusian. Front-end-only override, server keeps emitting the standard
+  // ISO regional-indicator flag (🇧🇾). All other countries unchanged, all
+  // other languages see the standard flag for Belarus.
+  const BY_EMOJI = '🇧🇾';
+  const BYWR_SVG =
+    '<svg class="flag-bywr" viewBox="0 0 18 12" width="18" height="12" aria-label="Belarus" role="img">' +
+      '<rect width="18" height="4" fill="#fff"/>' +
+      '<rect y="4" width="18" height="4" fill="#CE2029"/>' +
+      '<rect y="8" width="18" height="4" fill="#fff"/>' +
+    '</svg>';
+  function customizeBelarusFlag(root) {
+    if (!root || !root.querySelectorAll) return;
+    if (currentLang !== 'be') return;
+    root.querySelectorAll('.flag').forEach((el) => {
+      if (el.dataset.byrwApplied) return;
+      if (el.textContent.indexOf(BY_EMOJI) === -1) return;
+      el.innerHTML = BYWR_SVG;
+      el.dataset.byrwApplied = '1';
+    });
+  }
+
   function applyLang(root) {
     if (!root) return;
     const cat = currentCatalog;
-    if (cat === null && currentLang === 'en') return; // nothing to do
+    if (cat === null && currentLang === 'en') {
+      customizeBelarusFlag(root); // safe no-op for non-be
+      return;
+    }
     const q = (sel) => (root.querySelectorAll ? root.querySelectorAll(sel) : []);
     q('[data-t]').forEach((el) => {
       const k = el.getAttribute('data-t');
@@ -77,6 +102,7 @@
     q('[data-t-aria-label]').forEach((el) => {
       el.setAttribute('aria-label', translate(cat, el.getAttribute('data-t-aria-label')));
     });
+    customizeBelarusFlag(root);
   }
 
   async function setLang(code) {
