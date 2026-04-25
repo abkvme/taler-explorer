@@ -3,7 +3,7 @@
 {{$now := .Now}}
 <tr class="row-in" data-addr="{{maskIP $p.Addr}}">
   <td>
-    <code class="mono ip">{{maskIP $p.Addr}}{{if $p.Port}}:{{$p.Port}}{{end}}</code>
+    <code class="mono ip">{{maskIP $p.Addr}}</code>
   </td>
   <td>
     {{if $p.CountryCode}}
@@ -14,7 +14,10 @@
     {{end}}
   </td>
   <td class="mono">{{cleanVersion $p.Subver | default "—"}}</td>
-  <td class="num">{{fmtInt $p.Height}}</td>
+  <td class="num">
+    {{if le $p.Height 0}}<span class="muted" data-t="not synced">not synced</span>
+    {{else}}{{fmtInt $p.Height}}{{end}}
+  </td>
   <td class="num last-seen">{{liveSince $p.LastSeen $now}}</td>
 </tr>
 {{end}}

@@ -33,7 +33,7 @@ func TestServerRoutes(t *testing.T) {
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 
-	srv, err := New(cfg, st, logger, nil, "test")
+	srv, err := New(cfg, st, logger, nil, nil, "test")
 	if err != nil {
 		t.Fatalf("build server: %v", err)
 	}

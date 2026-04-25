@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"taler-explorer/internal/config"
+	"taler-explorer/internal/geoip"
 	"taler-explorer/internal/rpc"
 	"taler-explorer/internal/store"
 	"taler-explorer/internal/web/handlers"
@@ -25,16 +26,17 @@ type Server struct {
 	log     *slog.Logger
 	tpl     *handlers.Templates
 	rpc     *rpc.Client
+	geo     *geoip.Lookup
 	version string
 	mux     http.Handler
 }
 
-func New(cfg *config.Config, s *store.Store, log *slog.Logger, rpcClient *rpc.Client, version string) (*Server, error) {
+func New(cfg *config.Config, s *store.Store, log *slog.Logger, rpcClient *rpc.Client, geo *geoip.Lookup, version string) (*Server, error) {
 	tpl, err := handlers.LoadTemplates(embedded, cfg.UI, version)
 	if err != nil {
 		return nil, err
 	}
-	srv := &Server{cfg: cfg, store: s, log: log, tpl: tpl, rpc: rpcClient, version: version}
+	srv := &Server{cfg: cfg, store: s, log: log, tpl: tpl, rpc: rpcClient, geo: geo, version: version}
 	srv.mux = srv.buildRouter()
 	return srv, nil
 }
@@ -58,7 +60,7 @@ func (s *Server) buildRouter() http.Handler {
 		http.ServeFileFS(w, req, staticFS, "favicon.ico")
 	})
 
-	h := &handlers.Handlers{Store: s.store, Tpl: s.tpl, Cfg: s.cfg, Log: s.log, RPC: s.rpc, Version: s.version}
+	h := &handlers.Handlers{Store: s.store, Tpl: s.tpl, Cfg: s.cfg, Log: s.log, RPC: s.rpc, GeoIP: s.geo, Version: s.version}
 
 	r.Get("/", h.Blocks)
 	r.Get("/txs", h.Transactions)

@@ -456,7 +456,8 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
 /* Card toolbar + refresh button */
 .card-toolbar {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: 12px 16px 0;
+  padding: 14px 16px 14px;
+  margin-bottom: 4px;
 }
 
 /* List/Map switcher */

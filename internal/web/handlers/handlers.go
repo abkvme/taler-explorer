@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"taler-explorer/internal/config"
+	"taler-explorer/internal/geoip"
 	"taler-explorer/internal/rpc"
 	"taler-explorer/internal/store"
 )
@@ -25,8 +27,9 @@ type Handlers struct {
 	Tpl     *Templates
 	Cfg     *config.Config
 	Log     *slog.Logger
-	RPC     *rpc.Client // optional; used as fallback when the DB lacks tx inputs
-	Version string      // baked in at build time via -X main.version
+	RPC     *rpc.Client    // optional; used as fallback when the DB lacks tx inputs
+	GeoIP   *geoip.Lookup  // optional; used to resolve self IP for the network page
+	Version string         // baked in at build time via -X main.version
 }
 
 type pageData struct {
@@ -337,8 +340,20 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		h.Log.Error("network", "err", err)
 	}
 	now := time.Now()
+
+	// Prepend ourselves to the list — we're a node too. Live RPC each
+	// render; cheap (2 small calls), no DB row stored.
+	if selfPeers := h.fetchSelfPeers(r.Context(), now.Unix()); len(selfPeers) > 0 {
+		peers = append(selfPeers, peers...)
+	}
+
 	versions := map[string]int{}
-	countries := map[string]int{}
+	// countries: code -> {name, count}; rendered as a sorted slice below.
+	type ctyAcc struct {
+		Name  string
+		Count int
+	}
+	countriesAcc := map[string]*ctyAcc{}
 	type mapPoint struct {
 		Addr    string  `json:"addr"` // masked
 		Country string  `json:"country"`
@@ -350,13 +365,22 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 	}
 	points := make([]mapPoint, 0, len(peers))
 	for _, p := range peers {
-		v := p.Subver
+		v := versionFamily(p.Subver)
 		if v == "" {
 			v = "unknown"
 		}
 		versions[v]++
 		if p.CountryCode != "" {
-			countries[p.CountryCode]++
+			c := countriesAcc[p.CountryCode]
+			if c == nil {
+				name := p.Country
+				if name == "" {
+					name = p.CountryCode
+				}
+				c = &ctyAcc{Name: name}
+				countriesAcc[p.CountryCode] = c
+			}
+			c.Count++
 		}
 		if p.Latitude != 0 || p.Longitude != 0 {
 			points = append(points, mapPoint{
@@ -371,6 +395,24 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	mapJSON, _ := json.Marshal(points)
+
+	// Sort countries by count desc, then by name asc for stable display.
+	type CountryStat struct {
+		Code  string
+		Name  string
+		Count int
+	}
+	countries := make([]CountryStat, 0, len(countriesAcc))
+	for code, c := range countriesAcc {
+		countries = append(countries, CountryStat{Code: code, Name: c.Name, Count: c.Count})
+	}
+	sort.Slice(countries, func(i, j int) bool {
+		if countries[i].Count != countries[j].Count {
+			return countries[i].Count > countries[j].Count
+		}
+		return countries[i].Name < countries[j].Name
+	})
+
 	h.render(w, r, "network.html", pageData{
 		Title:       h.Cfg.UI.SiteName + " — Network",
 		Active:      "network",
@@ -385,6 +427,90 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 			"MapPointsJSON": template.JS(mapJSON),
 		},
 	})
+}
+
+// fetchSelfPeers returns synthetic Peer entries for each public address the
+// node thinks it has. Pure in-memory; never touches SQLite. Resolved through
+// the same GeoIP cache as other peers, so country shows up consistently.
+func (h *Handlers) fetchSelfPeers(ctx context.Context, nowTS int64) []store.Peer {
+	if h.RPC == nil {
+		return nil
+	}
+	ni, err := h.RPC.GetNetworkInfo(ctx)
+	if err != nil || ni == nil {
+		return nil
+	}
+	// localaddresses isn't on our typed NetworkInfo — pull via raw call.
+	type localAddr struct {
+		Address string `json:"address"`
+		Port    int    `json:"port"`
+	}
+	type netInfoExtra struct {
+		LocalAddresses []localAddr `json:"localaddresses"`
+		Subversion     string      `json:"subversion"`
+	}
+	raw, err := h.RPC.Raw(ctx, "getnetworkinfo")
+	if err != nil {
+		return nil
+	}
+	var extra netInfoExtra
+	if err := json.Unmarshal(raw, &extra); err != nil {
+		return nil
+	}
+	if len(extra.LocalAddresses) == 0 {
+		return nil
+	}
+	height, _ := h.RPC.GetBlockCount(ctx)
+
+	out := make([]store.Peer, 0, len(extra.LocalAddresses))
+	for _, la := range extra.LocalAddresses {
+		if la.Address == "" {
+			continue
+		}
+		country, code := "", ""
+		var lat, lng float64
+		if h.GeoIP != nil {
+			if g, err := h.GeoIP.Resolve(ctx, la.Address); err == nil {
+				country = g.Country
+				code = strings.ToUpper(g.CountryCode)
+				lat = g.Latitude
+				lng = g.Longitude
+			}
+		}
+		out = append(out, store.Peer{
+			Addr:        la.Address,
+			Port:        la.Port,
+			Subver:      extra.Subversion,
+			Height:      height,
+			Country:     country,
+			CountryCode: code,
+			Latitude:    lat,
+			Longitude:   lng,
+			LastSeen:    nowTS,
+		})
+	}
+	return out
+}
+
+// versionFamily collapses a peer subversion to its first two version
+// components, e.g. "/Taler:0.16.3.4/" -> "0.16.x". Returns "" for empty input.
+func versionFamily(subver string) string {
+	v := strings.Trim(subver, "/ ")
+	if v == "" {
+		return ""
+	}
+	if i := strings.LastIndex(v, ":"); i >= 0 {
+		v = v[i+1:]
+	}
+	v = strings.Trim(v, "/ ")
+	if v == "" {
+		return ""
+	}
+	parts := strings.SplitN(v, ".", 3)
+	if len(parts) >= 2 {
+		return parts[0] + "." + parts[1] + ".x"
+	}
+	return v
 }
 
 // maskIPPlain returns the same masked form as the maskIP template func, but

@@ -124,6 +124,39 @@
     }
   });
 
+  // ----- Pause auto-refresh while the tab is hidden -----------------------
+  // When the user switches to another tab / minimises the browser, every
+  // [hx-trigger="every Xs"] element has its trigger stashed in a data-attr
+  // and removed. On visibility=visible we restore them and HTMX re-arms the
+  // intervals. Net effect: zero background fetches in inactive tabs.
+  function pauseHxPolling() {
+    document.querySelectorAll('[hx-trigger]').forEach((el) => {
+      const trig = el.getAttribute('hx-trigger') || '';
+      if (!/(^|\s)every\s/.test(trig)) return;
+      if (el.dataset.hxTriggerStashed) return; // already paused
+      el.dataset.hxTriggerStashed = trig;
+      el.removeAttribute('hx-trigger');
+    });
+    if (window.htmx && htmx.process) htmx.process(document.body);
+  }
+  function resumeHxPolling() {
+    let any = false;
+    document.querySelectorAll('[data-hx-trigger-stashed]').forEach((el) => {
+      el.setAttribute('hx-trigger', el.dataset.hxTriggerStashed);
+      delete el.dataset.hxTriggerStashed;
+      any = true;
+    });
+    if (any && window.htmx && htmx.process) htmx.process(document.body);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseHxPolling();
+    else resumeHxPolling();
+  });
+  // Initial state — if the page loads in a backgrounded tab, pause immediately.
+  if (document.hidden) {
+    document.addEventListener('DOMContentLoaded', pauseHxPolling);
+  }
+
   // Brand coin: spin on hover (CSS), and spin two turns on tap (JS). We
   // listen to both `pointerdown` (so touch gets immediate feedback before any
   // click-nav delay) and fall back to `click` for keyboard activation.

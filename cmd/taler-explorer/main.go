@@ -98,7 +98,7 @@ func main() {
 		SupplyRefreshEvery: 15 * time.Minute,
 	}
 
-	server, err := web.New(cfg, st, logger.With("component", "web"), client, version)
+	server, err := web.New(cfg, st, logger.With("component", "web"), client, geo, version)
 	if err != nil {
 		logger.Error("build web", "err", err)
 		os.Exit(1)

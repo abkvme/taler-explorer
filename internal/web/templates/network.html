@@ -17,6 +17,12 @@
       {{range $v, $c := .Versions}}<li><span class="version-tag">{{cleanVersion $v | default "unknown"}}</span><span class="version-count">{{$c}}</span></li>{{end}}
     </ul>
   </div>
+  <div class="card summary versions">
+    <div class="kpi-label" data-t="Countries">Countries</div>
+    <ul class="version-list">
+      {{range .Countries}}<li><span class="version-tag"><span class="flag">{{countryFlag .Code}}</span> {{.Name}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
+    </ul>
+  </div>
 </section>
 
 <section class="card" x-data="{ view: 'list' }">
