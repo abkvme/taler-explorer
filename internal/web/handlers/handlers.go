@@ -347,6 +347,22 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		peers = append(selfPeers, peers...)
 	}
 
+	// Sort: highest-height (most-performant) first; not-synced (height <= 0)
+	// pushed to the end of the list. Stable so ties keep their existing
+	// last_seen-DESC order from the DB.
+	sort.SliceStable(peers, func(i, j int) bool {
+		ai, aj := peers[i].Height, peers[j].Height
+		badI := ai <= 0
+		badJ := aj <= 0
+		if badI != badJ {
+			return !badI // synced (good) sorts before not-synced (bad)
+		}
+		if !badI {
+			return ai > aj // both synced: higher height first
+		}
+		return false // both not-synced: keep insertion order
+	})
+
 	// versions/countries are accumulated as maps and converted to sorted
 	// slices below so the template renders in a deterministic, count-desc
 	// order. "unknown" entries are intentionally dropped from the versions

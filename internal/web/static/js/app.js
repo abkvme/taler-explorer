@@ -120,15 +120,28 @@
   }
 
   async function setLang(code) {
-    if (I18N_SUPPORTED.indexOf(code) < 0) return;
+    console.log('[i18n] setLang called with', code);
+    if (I18N_SUPPORTED.indexOf(code) < 0) {
+      console.warn('[i18n] setLang: unsupported code', code);
+      return;
+    }
     try {
       localStorage.setItem(I18N_LANG_KEY, code);
       localStorage.setItem(I18N_SET_AT_KEY, String(Date.now()));
     } catch (_) {}
     currentLang = code;
-    currentCatalog = code === 'en' ? null : await fetchCatalog(code);
+    if (code === 'en') {
+      currentCatalog = null;
+    } else {
+      currentCatalog = await fetchCatalog(code);
+    }
+    console.log('[i18n] setLang post-fetch: currentLang=', currentLang,
+                'currentCatalog=', currentCatalog === null ? 'null' : '[loaded ' + Object.keys(currentCatalog).length + ' keys]');
     document.documentElement.setAttribute('lang', code);
     applyLang(document);
+    console.log('[i18n] applyLang done. Sample [data-t]=', (document.querySelector('[data-t]') || {}).outerHTML);
+    var byrwLeft = document.querySelectorAll('.flag[data-byrw-applied]').length;
+    console.log('[i18n] flag[data-byrw-applied] still in DOM:', byrwLeft);
   }
   window.TalerI18n = { setLang, resolveLang, currentLang: () => currentLang };
 
