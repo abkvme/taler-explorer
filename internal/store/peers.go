@@ -16,17 +16,21 @@ func (s *Store) UpsertPeers(ctx context.Context, peers []Peer) error {
 		return err
 	}
 	defer tx.Rollback()
+	// Defensive update: only overwrite a stored field when the incoming
+	// value is meaningful. A peer mid-handshake (subver=='', height==-1)
+	// must not erase the previously-known good data for that addr. last_seen
+	// always overwrites — that's the point of the upsert.
 	stmt, err := tx.PrepareContext(ctx, `
         INSERT INTO peers(addr, port, protocol, subver, inbound, height, ping_ms, conn_time, country, country_code, latitude, longitude, last_seen)
         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(addr) DO UPDATE SET
-            port=excluded.port,
-            protocol=excluded.protocol,
-            subver=excluded.subver,
+            port=CASE WHEN excluded.port > 0 THEN excluded.port ELSE peers.port END,
+            protocol=CASE WHEN excluded.protocol > 0 THEN excluded.protocol ELSE peers.protocol END,
+            subver=COALESCE(NULLIF(excluded.subver, ''), peers.subver),
             inbound=excluded.inbound,
-            height=excluded.height,
-            ping_ms=excluded.ping_ms,
-            conn_time=excluded.conn_time,
+            height=CASE WHEN excluded.height > 0 THEN excluded.height ELSE peers.height END,
+            ping_ms=CASE WHEN excluded.ping_ms > 0 THEN excluded.ping_ms ELSE peers.ping_ms END,
+            conn_time=CASE WHEN excluded.conn_time > 0 THEN excluded.conn_time ELSE peers.conn_time END,
             country=COALESCE(NULLIF(excluded.country,''), peers.country),
             country_code=COALESCE(NULLIF(excluded.country_code,''), peers.country_code),
             latitude=COALESCE(NULLIF(excluded.latitude,0), peers.latitude),

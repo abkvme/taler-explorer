@@ -10,13 +10,13 @@
     <div class="peers-breakdown">
       <span class="peers-breakdown-row">
         <span class="dot ok"></span>
-        <span class="num">{{.SyncedCount}}</span>
-        <span class="lbl" data-t="synced">synced</span>
+        <span class="num">{{.RecentSyncedCount}}</span>
+        <span class="lbl" data-t="recent &amp; synced">recent &amp; synced</span>
       </span>
       <span class="peers-breakdown-row">
         <span class="dot bad"></span>
-        <span class="num">{{.NotSyncedCount}}</span>
-        <span class="lbl" data-t="not synced">not synced</span>
+        <span class="num">{{.OtherCount}}</span>
+        <span class="lbl" data-t="other">other</span>
       </span>
     </div>
   </div>
@@ -87,7 +87,9 @@
       var el = document.getElementById('peer-map');
       if (!el) return;
       if (map) { setTimeout(function(){ map.invalidateSize(); }, 50); return; }
-      map = L.map(el, { zoomControl: true, worldCopyJump: true }).setView([20, 0], 2);
+      // Centred on the BY/UA/PL tripoint, zoomed slightly in from world view.
+      map = L.map(el, { zoomControl: true, worldCopyJump: true, zoomSnap: 0.5 })
+            .setView([51.5, 23.6], 3.5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 10,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

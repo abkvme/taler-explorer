@@ -19,7 +19,7 @@ path = "/data/taler-explorer.db"
 [indexer]
 tip_poll_seconds = 3
 mempool_poll_seconds = 3
-peers_poll_seconds = 30
+peers_poll_seconds = 60
 stats_poll_seconds = 60
 # Walk back 500 blocks on first sync so the initial indexer run doesn't hammer
 # the node. Raise later if you want deeper history.

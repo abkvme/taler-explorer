@@ -191,6 +191,14 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
 }
 .nav a:hover { color: var(--fg); background: rgba(255,255,255,0.04); text-decoration: none; }
 .nav a.active { color: var(--fg); background: color-mix(in oklab, var(--accent) 14%, transparent); }
+.nav a { display: inline-flex; align-items: center; gap: 6px; }
+.nav-icon {
+  flex-shrink: 0;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+.nav a.active .nav-icon { color: var(--accent); opacity: 1; }
+.nav a:hover .nav-icon { opacity: 1; }
 
 /* Six-tile header:
    - 6 × 1 on very wide screens (>= 1600px) — each tile still has room for

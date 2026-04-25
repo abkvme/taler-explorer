@@ -363,14 +363,19 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		return false // both not-synced: keep insertion order
 	})
 
-	// Sync breakdown for the Total Peers KPI subscript.
-	syncedCount := 0
+	// Total-peers KPI breakdown:
+	//   "recent & synced"  → seen in last 90 s AND height > 0 (the healthy set)
+	//   "other"            → everything else (stale, mid-handshake, no longer
+	//                        connected — together in a single bucket)
+	const recentWindowSec int64 = 90
+	cutoffRecent := now.Unix() - recentWindowSec
+	recentSyncedCount := 0
 	for _, p := range peers {
-		if p.Height > 0 {
-			syncedCount++
+		if p.Height > 0 && p.LastSeen >= cutoffRecent {
+			recentSyncedCount++
 		}
 	}
-	notSyncedCount := len(peers) - syncedCount
+	otherCount := len(peers) - recentSyncedCount
 
 	// versions/countries are accumulated as maps and converted to sorted
 	// slices below so the template renders in a deterministic, count-desc
@@ -461,14 +466,14 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		UI:          h.Cfg.UI,
 		HeaderStats: h.newHeaderStats(r.Context()),
 		Body: map[string]any{
-			"Peers":          peers,
-			"Versions":       versions,
-			"Countries":      countries,
-			"SyncedCount":    syncedCount,
-			"NotSyncedCount": notSyncedCount,
-			"HistoryHours":   hours,
-			"Now":            now.Unix(),
-			"MapPointsJSON":  template.JS(mapJSON),
+			"Peers":             peers,
+			"Versions":          versions,
+			"Countries":         countries,
+			"RecentSyncedCount": recentSyncedCount,
+			"OtherCount":        otherCount,
+			"HistoryHours":      hours,
+			"Now":               now.Unix(),
+			"MapPointsJSON":     template.JS(mapJSON),
 		},
 	})
 }

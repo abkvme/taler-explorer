@@ -20,7 +20,7 @@ path = "./taler-explorer.db"
 # Polling cadence for the tip follower and mempool watcher.
 tip_poll_seconds = 3
 mempool_poll_seconds = 3
-peers_poll_seconds = 30
+peers_poll_seconds = 60
 stats_poll_seconds = 60
 
 # Cap how far back the tip follower will walk on first sync.

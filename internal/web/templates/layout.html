@@ -84,9 +84,29 @@
       </div>
 
       <nav class="nav">
-        <a href="/"        class="{{if or (eq .Active "blocks") (eq .Active "block")}}active{{end}}" data-t="Blocks">Blocks</a>
-        <a href="/txs"     class="{{if or (eq .Active "txs") (eq .Active "tx") (eq .Active "address")}}active{{end}}" data-t="Transactions">Transactions</a>
-        <a href="/network" class="{{if eq .Active "network"}}active{{end}}" data-t="Network">Network</a>
+        <a href="/" class="{{if or (eq .Active "blocks") (eq .Active "block")}}active{{end}}">
+          <svg class="nav-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="2" width="5.5" height="5.5" rx="1"/>
+            <rect x="8.5" y="2" width="5.5" height="5.5" rx="1"/>
+            <rect x="2" y="8.5" width="5.5" height="5.5" rx="1"/>
+            <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/>
+          </svg>
+          <span data-t="Blocks">Blocks</span>
+        </a>
+        <a href="/txs" class="{{if or (eq .Active "txs") (eq .Active "tx") (eq .Active "address")}}active{{end}}">
+          <svg class="nav-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 5.5h11l-3-3"/>
+            <path d="M14 10.5H3l3 3"/>
+          </svg>
+          <span data-t="Transactions">Transactions</span>
+        </a>
+        <a href="/network" class="{{if eq .Active "network"}}active{{end}}">
+          <svg class="nav-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.5"/>
+            <path d="M1.5 8h13M8 1.5c2.4 2.4 2.4 10.6 0 13M8 1.5c-2.4 2.4-2.4 10.6 0 13" stroke-linecap="round"/>
+          </svg>
+          <span data-t="Network">Network</span>
+        </a>
       </nav>
       <form class="search-form" role="search" action="/search" method="get">
         <input type="search" name="q"

@@ -136,7 +136,7 @@ func applyDefaults(c *Config) {
 		c.Indexer.MempoolPollSeconds = 3
 	}
 	if c.Indexer.PeersPollSeconds == 0 {
-		c.Indexer.PeersPollSeconds = 30
+		c.Indexer.PeersPollSeconds = 60
 	}
 	if c.Indexer.StatsPollSeconds == 0 {
 		c.Indexer.StatsPollSeconds = 60
