@@ -82,10 +82,8 @@ func (s *Server) buildRouter() http.Handler {
 	r.Get("/_partial/hashrate-series", h.HashrateSeries)
 	r.Get("/_partial/price-series", h.PriceSeries)
 
-	// 404 fallback
-	r.NotFound(func(w http.ResponseWriter, req *http.Request) {
-		http.Error(w, "not found", http.StatusNotFound)
-	})
+	// 404 fallback — friendly themed page rather than plain text.
+	r.NotFound(h.NotFound)
 
 	return r
 }

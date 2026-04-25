@@ -1,0 +1,15 @@
+{{define "body"}}
+<section class="nf-hero">
+  <div class="nf-code" aria-hidden="true">
+    <span class="nf-digit nf-d4">4</span><span class="nf-coin"><img src="/static/img/taler_circular.png" alt="" width="120" height="120"></span><span class="nf-digit nf-d4">4</span>
+  </div>
+  <h1 class="nf-title" data-t="Block not found">Block not found</h1>
+  <p class="nf-sub" data-t="This page didn't make it past consensus. It might have been pruned, mined into the void, or simply never existed.">This page didn't make it past consensus. It might have been pruned, mined into the void, or simply never existed.</p>
+  <div class="nf-actions">
+    <a href="/" class="nf-btn nf-btn-primary"><span data-t="Latest blocks">Latest blocks</span></a>
+    <a href="/txs" class="nf-btn"><span data-t="Transactions">Transactions</span></a>
+    <a href="/network" class="nf-btn"><span data-t="Network">Network</span></a>
+  </div>
+  <p class="nf-quote" data-t="Don't trust. Verify.">Don't trust. Verify.</p>
+</section>
+{{end}}

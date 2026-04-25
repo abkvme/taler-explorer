@@ -186,7 +186,7 @@ func (h *Handlers) BlockDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if blk == nil {
-		http.Error(w, "block not indexed", http.StatusNotFound)
+		h.NotFound(w, r)
 		return
 	}
 	txs, _ := h.Store.TxsInBlock(r.Context(), height)
@@ -215,7 +215,7 @@ func (h *Handlers) TxDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if tx == nil {
-		http.Error(w, "tx not indexed", http.StatusNotFound)
+		h.NotFound(w, r)
 		return
 	}
 	ins, err := h.Store.InputsFor(r.Context(), txid)
@@ -796,6 +796,29 @@ func (h *Handlers) AddressDetail(w http.ResponseWriter, r *http.Request) {
 			"RedBelow":    h.Cfg.Transactions.RedBelow,
 		},
 	})
+}
+
+// NotFound renders the friendly 404 page using the standard layout. Used both
+// as the chi catch-all and from per-resource handlers when a specific block /
+// tx / address can't be resolved.
+func (h *Handlers) NotFound(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusNotFound)
+	tpl := h.Tpl.Page("not_found.html")
+	if tpl == nil {
+		// Last-resort fallback if templates aren't loaded.
+		_, _ = w.Write([]byte("not found"))
+		return
+	}
+	if err := tpl.ExecuteTemplate(w, "layout", pageData{
+		Title:       h.Cfg.UI.SiteName + " — 404",
+		Active:      "",
+		UI:          h.Cfg.UI,
+		HeaderStats: h.newHeaderStats(r.Context()),
+		Body:        nil,
+	}); err != nil {
+		h.Log.Error("not_found render", "err", err)
+	}
 }
 
 // Robots emits a permissive robots.txt pointing at our sitemap.
