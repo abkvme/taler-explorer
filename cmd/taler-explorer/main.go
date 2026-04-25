@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -49,6 +50,13 @@ func main() {
 		os.Exit(1)
 	}
 	defer st.Close()
+	// Self-check log: if peers_in_db drops to 0 across restarts the operator
+	// instantly knows persistence is broken (e.g. relative DB path landing
+	// outside the mounted volume).
+	if abs, aerr := filepath.Abs(cfg.DB.Path); aerr == nil {
+		n, _ := st.CountPeersActiveSince(context.Background(), 0)
+		logger.Info("store opened", "path", abs, "peers_in_db", n)
+	}
 
 	client := rpc.New(cfg.RPC.URL, cfg.RPC.User, cfg.RPC.Password, cfg.RPC.Timeout())
 

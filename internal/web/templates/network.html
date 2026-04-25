@@ -2,23 +2,14 @@
 <section class="hero">
   <h1 data-t="Network">Network</h1>
   <p class="subtitle">
-    <span data-t="Every peer seen in the last">Every peer seen in the last</span> {{fmtHours .HistoryHours}}.
-    <span data-t="Green dot = connected right now.">Green dot = connected right now.</span>
+    <span data-t="Every peer the node has connected to in the last">Every peer the node has connected to in the last</span> {{fmtHours .HistoryHours}}.
   </p>
 </section>
 
 <section class="summary-grid">
   <div class="card summary">
-    <div class="kpi">{{.LiveCount}}</div>
-    <div class="kpi-label" data-t="Connected now">Connected now</div>
-  </div>
-  <div class="card summary">
     <div class="kpi">{{len .Peers}}</div>
-    <div class="kpi-label"><span data-t="Seen in">Seen in</span> {{fmtHours .HistoryHours}}</div>
-  </div>
-  <div class="card summary">
-    <div class="kpi">{{.Inbound}} / {{.Outbound}}</div>
-    <div class="kpi-label" data-t="Inbound / Outbound (live)">Inbound / Outbound (live)</div>
+    <div class="kpi-label" data-t="Total peers seen">Total peers seen</div>
   </div>
   <div class="card summary versions">
     <div class="kpi-label" data-t="Versions">Versions</div>
@@ -86,13 +77,14 @@
         maxZoom: 10,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(map);
-      var live = L.layerGroup().addTo(map);
-      var seen = L.layerGroup().addTo(map);
+      // Single neutral colour — no live/offline distinction. Marker size and
+      // colour are uniform; the only thing the map conveys is geographic
+      // distribution of the 30-day peer set.
+      var fill = '#c9a24b'; // accent gold, easy to spot on the dark gray tiles
       points.forEach(function (p) {
-        var fill = p.live ? '#3cc98a' : '#c5cbd7';
         var marker = L.circleMarker([p.lat, p.lng], {
-          radius: p.live ? 4 : 3,
-          color: '#0b0d12',           // dark border — stands out on gray tiles
+          radius: 4,
+          color: '#0b0d12',
           weight: 1.5,
           fillColor: fill,
           fillOpacity: 1,
@@ -102,10 +94,9 @@
           '<strong>' + (p.addr || '') + '</strong><br>' +
           (p.country || 'Unknown') + (p.code ? ' (' + p.code + ')' : '') + '<br>' +
           (p.subver ? p.subver.replace(/[<>]/g,'') + '<br>' : '') +
-          'Height: ' + (p.height || 0) + '<br>' +
-          (p.live ? '<span style="color:#3cc98a">● connected now</span>' : '<span style="color:#8a93a6">◦ seen recently</span>')
+          'Height: ' + (p.height || 0)
         );
-        (p.live ? live : seen).addLayer(marker);
+        marker.addTo(map);
       });
       setTimeout(function(){ map.invalidateSize(); }, 50);
     };

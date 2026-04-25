@@ -3,8 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -319,7 +321,11 @@ func (h *Handlers) Movements(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Network renders /network — list + map views share the same data.
+// Network renders /network — every peer seen in the rolling window.
+//
+// No live-status concept: any peer the node connected to in the last N hours
+// is listed equally. IPs are masked at the server boundary so the unredacted
+// address never reaches the browser.
 func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 	hours := h.Cfg.Network.HistoryHours
 	if hours <= 0 {
@@ -331,32 +337,19 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		h.Log.Error("network", "err", err)
 	}
 	now := time.Now()
-	liveCount := 0
-	inbound := 0
-	outbound := 0
 	versions := map[string]int{}
 	countries := map[string]int{}
 	type mapPoint struct {
-		Addr    string  `json:"addr"`
+		Addr    string  `json:"addr"` // masked
 		Country string  `json:"country"`
 		Code    string  `json:"code"`
 		Lat     float64 `json:"lat"`
 		Lng     float64 `json:"lng"`
-		Live    bool    `json:"live"`
 		Subver  string  `json:"subver"`
 		Height  int64   `json:"height"`
 	}
 	points := make([]mapPoint, 0, len(peers))
 	for _, p := range peers {
-		live := store.IsPeerCurrentlyConnected(p, now)
-		if live {
-			liveCount++
-			if p.Inbound {
-				inbound++
-			} else {
-				outbound++
-			}
-		}
 		v := p.Subver
 		if v == "" {
 			v = "unknown"
@@ -367,12 +360,11 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		}
 		if p.Latitude != 0 || p.Longitude != 0 {
 			points = append(points, mapPoint{
-				Addr:    p.Addr,
+				Addr:    maskIPPlain(p.Addr),
 				Country: p.Country,
 				Code:    p.CountryCode,
 				Lat:     p.Latitude,
 				Lng:     p.Longitude,
-				Live:    live,
 				Subver:  p.Subver,
 				Height:  p.Height,
 			})
@@ -386,9 +378,6 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		HeaderStats: h.newHeaderStats(r.Context()),
 		Body: map[string]any{
 			"Peers":         peers,
-			"Inbound":       inbound,
-			"Outbound":      outbound,
-			"LiveCount":     liveCount,
 			"Versions":      versions,
 			"Countries":     countries,
 			"HistoryHours":  hours,
@@ -396,6 +385,29 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 			"MapPointsJSON": template.JS(mapJSON),
 		},
 	})
+}
+
+// maskIPPlain returns the same masked form as the maskIP template func, but
+// as a plain string suitable for embedding in JSON sent to the map JS.
+func maskIPPlain(addr string) string {
+	host := strings.TrimSpace(addr)
+	host = strings.Trim(host, "[]")
+	if host == "" {
+		return ""
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return host
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return fmt.Sprintf("xxx.xxx.%d.%d", v4[2], v4[3])
+	}
+	parts := strings.Split(ip.To16().String(), ":")
+	last := parts[len(parts)-1]
+	if last == "" && len(parts) >= 2 {
+		last = parts[len(parts)-2]
+	}
+	return "xxxx:…:" + last
 }
 
 func (h *Handlers) render(w http.ResponseWriter, r *http.Request, name string, data pageData) {

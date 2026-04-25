@@ -438,19 +438,18 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
 .country-name.muted { color: var(--fg-muted); }
 .subver { color: var(--fg-muted); }
 
-/* Live dot next to peer addr */
-.live-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  margin-right: 8px; vertical-align: middle;
-  background: var(--fg-muted); opacity: .45;
-  transition: background .2s;
-}
-.peer-live .live-dot {
-  background: var(--good); opacity: 1;
-  box-shadow: 0 0 8px color-mix(in oklab, var(--good) 60%, transparent);
-}
-.peer-offline .mono { color: var(--fg-muted); }
 .last-seen { color: var(--fg-muted); font-size: 12px; }
+
+/* IP-mask: server replaces the first 2 IPv4 octets / non-trailing IPv6
+   groups with placeholder chars and wraps them in this span. CSS adds a
+   static blur for visual flourish. The masked text never reveals the real
+   IP — selecting / copying gives only the placeholder characters. */
+.ip-mask {
+  filter: blur(2.5px);
+  user-select: none;
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+}
 
 [x-cloak] { display: none !important; }
 

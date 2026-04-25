@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io/fs"
 	"math"
+	"net"
 	"strings"
 	"time"
 
@@ -99,7 +100,45 @@ func (t *Templates) funcMap() template.FuncMap {
 		"fmtTrend":     fmtTrend,
 		"fmtHours":     fmtHours,
 		"buildVersion": func() string { return t.Version },
+		"maskIP":       maskIP,
 	}
+}
+
+// maskIP returns a privacy-preserving rendering of a peer IP for the HTML
+// view. The first two IPv4 octets — or all but the last group of an IPv6 —
+// are replaced with placeholder chars on the server, so the unredacted IP
+// never reaches the browser. The masked portion is wrapped in a span the
+// CSS can blur for visual flourish.
+//
+//   1.2.3.4                   -> <span class="ip-mask">xxx.xxx</span>.3.4
+//   2001:db8:abcd::1234:5678  -> <span class="ip-mask">xxxx:…</span>:5678
+//
+// Hostnames (anything that doesn't parse as an IP) pass through unchanged.
+func maskIP(addr string) template.HTML {
+	host := strings.TrimSpace(addr)
+	host = strings.Trim(host, "[]")
+	if host == "" {
+		return ""
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return template.HTML(template.HTMLEscapeString(host))
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return template.HTML(fmt.Sprintf(
+			`<span class="ip-mask">xxx.xxx</span>.%d.%d`,
+			v4[2], v4[3],
+		))
+	}
+	parts := strings.Split(ip.To16().String(), ":")
+	last := parts[len(parts)-1]
+	if last == "" && len(parts) >= 2 {
+		last = parts[len(parts)-2]
+	}
+	return template.HTML(fmt.Sprintf(
+		`<span class="ip-mask">xxxx:…</span>:%s`,
+		template.HTMLEscapeString(last),
+	))
 }
 
 // fmtHours renders a whole-hour duration as the largest sensible unit for labels.
@@ -235,14 +274,16 @@ func pageRange(current, total, window int) []int {
 	return out
 }
 
-// liveSince compares last_seen against now; <= 120 s means "live", else "X min/h/d ago".
+// liveSince renders a plain relative time for the Last-seen column. Same
+// branch structure as the original, with the "live" string replaced by a
+// seconds-based label so no live-status language remains.
 func liveSince(lastSeen, now int64) string {
 	diff := now - lastSeen
 	if diff < 0 {
 		diff = 0
 	}
 	if diff <= 120 {
-		return "live"
+		return "recently"
 	}
 	if diff < 3600 {
 		return fmt.Sprintf("%dm ago", diff/60)

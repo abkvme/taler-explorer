@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"net"
+	"strings"
 	"time"
 )
 
@@ -46,6 +48,47 @@ func (s *Store) UpsertPeers(ctx context.Context, peers []Peer) error {
 func (s *Store) PrunePeersOlderThan(ctx context.Context, cutoff int64) error {
 	_, err := s.DB.ExecContext(ctx, `DELETE FROM peers WHERE last_seen < ?`, cutoff)
 	return err
+}
+
+// PruneLocalPeers removes any rows whose addr is a loopback / RFC1918 private /
+// link-local / unspecified address (Docker NAT noise, LAN traffic, etc.).
+// Returns the number of rows deleted. Backed by stdlib net.IP predicates so the
+// rule stays in sync with the indexer-side filter.
+func (s *Store) PruneLocalPeers(ctx context.Context) (int, error) {
+	rows, err := s.DB.QueryContext(ctx, `SELECT addr FROM peers`)
+	if err != nil {
+		return 0, err
+	}
+	var toDelete []string
+	for rows.Next() {
+		var addr string
+		if err := rows.Scan(&addr); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		host := strings.Trim(strings.TrimSpace(addr), "[]")
+		if host == "" {
+			toDelete = append(toDelete, addr)
+			continue
+		}
+		ip := net.ParseIP(host)
+		if ip == nil {
+			continue // hostname or otherwise unparseable — leave alone
+		}
+		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsUnspecified() {
+			toDelete = append(toDelete, addr)
+		}
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	for _, a := range toDelete {
+		if _, err := s.DB.ExecContext(ctx, `DELETE FROM peers WHERE addr = ?`, a); err != nil {
+			return 0, err
+		}
+	}
+	return len(toDelete), nil
 }
 
 // ListPeersActiveSince returns peers last seen at or after sinceTS. A peer is

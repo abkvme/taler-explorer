@@ -3,6 +3,7 @@ package indexer
 import (
 	"context"
 	"log/slog"
+	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -20,6 +21,8 @@ type Peers struct {
 	GeoIP    *geoip.Lookup
 	// Peers whose last_seen is older than RetainHours are pruned.
 	RetainHours int
+
+	firstRun bool
 }
 
 func (p *Peers) Run(ctx context.Context) error {
@@ -46,6 +49,12 @@ func (p *Peers) once(ctx context.Context) {
 	peers := make([]store.Peer, 0, len(rawPeers))
 	for _, pr := range rawPeers {
 		host, port := splitAddr(pr.Addr)
+		// Drop loopback / RFC1918 / link-local / IPv6 ULA peers — these are
+		// either Docker NAT plumbing or local-LAN noise, not real internet
+		// peers, and would clutter the public network page.
+		if isLocalAddress(host) {
+			continue
+		}
 		var lat, lng float64
 		country, code := "", ""
 		if p.GeoIP != nil {
@@ -83,6 +92,42 @@ func (p *Peers) once(ctx context.Context) {
 	if err := p.Store.PrunePeersOlderThan(ctx, cutoff); err != nil {
 		p.Log.Warn("prune peers", "err", err)
 	}
+	// Observability — one structured line per poll so an operator can grep
+	//   docker compose logs taler-explorer | grep "peers poll"
+	// and see whether the indexer is doing its job and whether total_in_db
+	// grows over time as new peers connect.
+	if total, err := p.Store.CountPeersActiveSince(ctx, 0); err == nil {
+		p.Log.Info("peers poll",
+			"from_node", len(rawPeers),
+			"after_filter", len(peers),
+			"total_in_db", total,
+		)
+	}
+	// One-time scrub of any local-range rows persisted by a pre-fix run.
+	if !p.firstRun {
+		p.firstRun = true
+		if n, err := p.Store.PruneLocalPeers(ctx); err != nil {
+			p.Log.Warn("prune local peers", "err", err)
+		} else if n > 0 {
+			p.Log.Info("pruned local-range peers from previous runs", "count", n)
+		}
+	}
+}
+
+// isLocalAddress returns true for any address that should never appear on a
+// public-facing peer list: empty, loopback, RFC1918 private (incl. IPv6 ULA),
+// or link-local. Backed by stdlib net.IP predicates.
+func isLocalAddress(host string) bool {
+	host = strings.Trim(strings.TrimSpace(host), "[]")
+	if host == "" {
+		return true
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		// Not parseable as IP (hostname?). Be permissive — let it through.
+		return false
+	}
+	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsUnspecified()
 }
 
 func splitAddr(addr string) (string, int) {
