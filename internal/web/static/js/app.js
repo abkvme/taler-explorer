@@ -71,36 +71,50 @@
     '</svg>';
   function customizeBelarusFlag(root) {
     if (!root || !root.querySelectorAll) return;
-    if (currentLang !== 'be') return;
-    root.querySelectorAll('.flag').forEach((el) => {
-      if (el.dataset.byrwApplied) return;
-      if (el.textContent.indexOf(BY_EMOJI) === -1) return;
-      el.innerHTML = BYWR_SVG;
-      el.dataset.byrwApplied = '1';
-    });
+    if (currentLang === 'be') {
+      // Apply: swap any 🇧🇾 emoji-flag span for the WRW SVG, remembering the
+      // original innerHTML so we can revert on language switch.
+      root.querySelectorAll('.flag').forEach((el) => {
+        if (el.dataset.byrwApplied) return;
+        if (el.textContent.indexOf(BY_EMOJI) === -1) return;
+        el.dataset.byrwOriginal = el.innerHTML;
+        el.innerHTML = BYWR_SVG;
+        el.dataset.byrwApplied = '1';
+      });
+    } else {
+      // Revert: restore originals on previously-customized flags.
+      root.querySelectorAll('.flag[data-byrw-applied]').forEach((el) => {
+        el.innerHTML = el.dataset.byrwOriginal || BY_EMOJI;
+        delete el.dataset.byrwApplied;
+        delete el.dataset.byrwOriginal;
+      });
+    }
+  }
+
+  // Translate a key with the active catalog. Falls back to the key itself
+  // (the English source) — which is exactly what we want when switching back
+  // to English: cat is null, helper returns the source string.
+  function translateOrSource(cat, key) {
+    if (cat === null) return key;
+    return translate(cat, key);
   }
 
   function applyLang(root) {
     if (!root) return;
     const cat = currentCatalog;
-    if (cat === null && currentLang === 'en') {
-      customizeBelarusFlag(root); // safe no-op for non-be
-      return;
-    }
     const q = (sel) => (root.querySelectorAll ? root.querySelectorAll(sel) : []);
     q('[data-t]').forEach((el) => {
-      const k = el.getAttribute('data-t');
-      const v = translate(cat, k);
+      const v = translateOrSource(cat, el.getAttribute('data-t'));
       if (el.textContent !== v) el.textContent = v;
     });
     q('[data-t-placeholder]').forEach((el) => {
-      el.setAttribute('placeholder', translate(cat, el.getAttribute('data-t-placeholder')));
+      el.setAttribute('placeholder', translateOrSource(cat, el.getAttribute('data-t-placeholder')));
     });
     q('[data-t-title]').forEach((el) => {
-      el.setAttribute('title', translate(cat, el.getAttribute('data-t-title')));
+      el.setAttribute('title', translateOrSource(cat, el.getAttribute('data-t-title')));
     });
     q('[data-t-aria-label]').forEach((el) => {
-      el.setAttribute('aria-label', translate(cat, el.getAttribute('data-t-aria-label')));
+      el.setAttribute('aria-label', translateOrSource(cat, el.getAttribute('data-t-aria-label')));
     });
     customizeBelarusFlag(root);
   }
