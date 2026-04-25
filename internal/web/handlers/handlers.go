@@ -363,6 +363,15 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		return false // both not-synced: keep insertion order
 	})
 
+	// Sync breakdown for the Total Peers KPI subscript.
+	syncedCount := 0
+	for _, p := range peers {
+		if p.Height > 0 {
+			syncedCount++
+		}
+	}
+	notSyncedCount := len(peers) - syncedCount
+
 	// versions/countries are accumulated as maps and converted to sorted
 	// slices below so the template renders in a deterministic, count-desc
 	// order. "unknown" entries are intentionally dropped from the versions
@@ -452,12 +461,14 @@ func (h *Handlers) Network(w http.ResponseWriter, r *http.Request) {
 		UI:          h.Cfg.UI,
 		HeaderStats: h.newHeaderStats(r.Context()),
 		Body: map[string]any{
-			"Peers":         peers,
-			"Versions":      versions,
-			"Countries":     countries,
-			"HistoryHours":  hours,
-			"Now":           now.Unix(),
-			"MapPointsJSON": template.JS(mapJSON),
+			"Peers":          peers,
+			"Versions":       versions,
+			"Countries":      countries,
+			"SyncedCount":    syncedCount,
+			"NotSyncedCount": notSyncedCount,
+			"HistoryHours":   hours,
+			"Now":            now.Unix(),
+			"MapPointsJSON":  template.JS(mapJSON),
 		},
 	})
 }

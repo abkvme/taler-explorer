@@ -218,18 +218,23 @@ func fmtTLRExact(v float64) template.HTML {
 }
 
 // cleanVersion extracts the numeric version from a bitcoin-style subver like
-//   /Taler:0.19.6.8/     -> "0.19.6.8"
-//   /TalerCore:0.16.3.4/ -> "0.16.3.4"
-// Returns the input unchanged if it doesn't look like the expected shape.
+//   /Taler:0.19.6.8/                       -> "0.19.6.8"
+//   /TalerCore:0.16.3.4/                   -> "0.16.3.4"
+//   /TalerCore:0.16.3.4(TalerCrypto.com)/  -> "0.16.3.4"
+// Strips wrapping slashes, the "Name:" prefix, and any parenthesized comment
+// some forks append to identify themselves (BIP-14 style).
 func cleanVersion(s string) string {
 	s = strings.Trim(s, "/ ")
 	if s == "" {
 		return ""
 	}
 	if i := strings.LastIndex(s, ":"); i >= 0 {
-		return strings.Trim(s[i+1:], "/ ")
+		s = s[i+1:]
 	}
-	return s
+	if i := strings.Index(s, "("); i >= 0 {
+		s = s[:i]
+	}
+	return strings.Trim(s, "/ ")
 }
 
 // txTier maps a tx's total_out to a CSS class.

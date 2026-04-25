@@ -1,26 +1,35 @@
 {{define "body"}}
 <section class="hero">
   <h1 data-t="Network">Network</h1>
-  <p class="subtitle">
-    <span data-t="Every peer the node has connected to in the last">Every peer the node has connected to in the last</span> {{fmtHours .HistoryHours}}.
-  </p>
 </section>
 
 <section class="summary-grid">
-  <div class="card summary">
-    <div class="kpi">{{len .Peers}}</div>
+  <div class="card summary peers-summary">
     <div class="kpi-label" data-t="Total peers seen">Total peers seen</div>
-  </div>
-  <div class="card summary versions">
-    <div class="kpi-label"><span data-t="Versions">Versions</span> <span class="kpi-sub">({{len .Versions}})</span></div>
-    <ul class="version-list compact">
-      {{range .Versions}}<li><span class="version-tag">{{.Family}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
-    </ul>
+    <div class="kpi peers-kpi">{{len .Peers}}</div>
+    <div class="peers-breakdown">
+      <span class="peers-breakdown-row">
+        <span class="dot ok"></span>
+        <span class="num">{{.SyncedCount}}</span>
+        <span class="lbl" data-t="synced">synced</span>
+      </span>
+      <span class="peers-breakdown-row">
+        <span class="dot bad"></span>
+        <span class="num">{{.NotSyncedCount}}</span>
+        <span class="lbl" data-t="not synced">not synced</span>
+      </span>
+    </div>
   </div>
   <div class="card summary versions">
     <div class="kpi-label"><span data-t="Countries">Countries</span> <span class="kpi-sub">({{len .Countries}})</span></div>
     <ul class="version-list compact">
       {{range .Countries}}<li><span class="version-tag"><span class="flag">{{countryFlag .Code}}</span> {{.Name}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
+    </ul>
+  </div>
+  <div class="card summary versions">
+    <div class="kpi-label"><span data-t="Versions">Versions</span> <span class="kpi-sub">({{len .Versions}})</span></div>
+    <ul class="version-list compact">
+      {{range .Versions}}<li><span class="version-tag">{{.Family}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
     </ul>
   </div>
 </section>

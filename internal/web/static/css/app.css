@@ -350,6 +350,40 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
   letter-spacing: 0;
 }
 
+/* Total Peers card — bigger numeric, with synced / not-synced breakdown
+   underneath so the card doesn't look empty next to the version/country
+   lists. */
+.peers-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.peers-summary .peers-kpi {
+  font-size: 56px;
+  line-height: 1;
+  margin: 4px 0;
+  letter-spacing: -0.03em;
+}
+.peers-breakdown {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-top: auto;
+}
+.peers-breakdown-row {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--fg-muted);
+}
+.peers-breakdown-row .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+}
+.peers-breakdown-row .dot.ok  { background: var(--good); }
+.peers-breakdown-row .dot.bad { background: var(--fg-muted); opacity: 0.5; }
+.peers-breakdown-row .num {
+  color: var(--fg); font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 24px; text-align: right;
+}
+.peers-breakdown-row .lbl { color: var(--fg-muted); }
+
 /* Map peer markers — small drop shadow + slight transition for hover */
 .leaflet-marker-icon.peer-marker-icon {
   filter: drop-shadow(0 1px 2px rgba(0,0,0,.6));
