@@ -20,14 +20,33 @@
       </span>
     </div>
   </div>
-  <div class="card summary versions">
-    <div class="kpi-label"><span data-t="Countries">Countries</span> <span class="kpi-sub">({{len .Countries}})</span></div>
+  <div class="card summary versions" x-data="{ open: false }">
+    <div class="kpi-label">
+      <span data-t="Countries">Countries</span>
+      <span class="count-badge">{{len .Countries}}</span>
+    </div>
     <ul class="version-list compact">
-      {{range .Countries}}<li><span class="version-tag"><span class="flag">{{countryFlag .Code}}</span> {{.Name}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
+      {{range $i, $c := .Countries}}{{if lt $i 5}}<li><span class="version-tag"><span class="flag">{{countryFlag $c.Code}}</span> {{$c.Name}}</span><span class="version-count">{{$c.Count}}</span></li>{{end}}{{end}}
     </ul>
+    {{if gt (len .Countries) 5}}
+    <button type="button" class="see-all-btn" @click="open = true">
+      <span data-t="See all">See all</span> ({{len .Countries}})
+    </button>
+    <div x-show="open" x-cloak class="modal-backdrop" @click.self="open = false" @keydown.escape.window="open = false">
+      <div class="modal" role="dialog" aria-modal="true">
+        <header class="modal-header">
+          <h3 class="modal-title"><span data-t="Countries">Countries</span> <span class="count-badge">{{len .Countries}}</span></h3>
+          <button type="button" class="modal-close" @click="open = false" aria-label="Close" data-t-aria-label="Close">×</button>
+        </header>
+        <ul class="version-list compact modal-list">
+          {{range .Countries}}<li><span class="version-tag"><span class="flag">{{countryFlag .Code}}</span> {{.Name}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
+        </ul>
+      </div>
+    </div>
+    {{end}}
   </div>
   <div class="card summary versions">
-    <div class="kpi-label"><span data-t="Versions">Versions</span> <span class="kpi-sub">({{len .Versions}})</span></div>
+    <div class="kpi-label"><span data-t="Versions">Versions</span> <span class="count-badge">{{len .Versions}}</span></div>
     <ul class="version-list compact">
       {{range .Versions}}<li><span class="version-tag">{{.Family}}</span><span class="version-count">{{.Count}}</span></li>{{end}}
     </ul>
