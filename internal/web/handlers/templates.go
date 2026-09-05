@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"math"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 
@@ -101,6 +102,7 @@ func (t *Templates) funcMap() template.FuncMap {
 		"fmtHours":     fmtHours,
 		"buildVersion": func() string { return t.Version },
 		"maskIP":       maskIP,
+		"parseAgent":   parseAgent,
 	}
 }
 
@@ -488,4 +490,89 @@ func countryFlag(code string) string {
 		out = append(out, 0x1F1E6+(r-'A'))
 	}
 	return string(out)
+}
+
+// PeerAgent is what a peer's BIP-14 user agent says about itself.
+//
+// Only Taler 0.20.0 and later report a run mode or an API sidecar. Older peers
+// send no comments at all, so their fields are not "false" or "none" — they are
+// unknowable, and the page has to say so rather than imply the peer answered.
+type PeerAgent struct {
+	Version string // "0.20.0", "0.19.6.8", "" when unparseable
+	// Mode is "GUI", "SERV", or "" when the peer did not say.
+	Mode string
+	// API is the sidecar version, or "" when none is registered.
+	API string
+	// Reports is true when this peer is new enough to answer at all. False means
+	// the columns are blank because the question could not be asked, not because
+	// the answer was no.
+	Reports bool
+}
+
+// firstReportingVersion is the release that began putting the run mode and the
+// API sidecar in the user agent. Anything below it is silent on both.
+var firstReportingVersion = [3]int{0, 20, 0}
+
+// parseAgent splits a peer subversion into its parts.
+//
+// Deliberately forgiving: the string is chosen by a remote peer, so it may be
+// anything at all. Nothing here is treated as a fact about that peer — it is
+// only ever what the peer claimed. Unrecognised comments are ignored rather
+// than guessed at.
+//
+//	/Taler:0.19.6.8/                      -> {0.19.6.8, "", "", false}
+//	/Taler:0.20.0(SERV)/                  -> {0.20.0, SERV, "", true}
+//	/Taler:0.20.0(GUI; api:1.2.0; eu-1)/  -> {0.20.0, GUI, 1.2.0, true}
+func parseAgent(subver string) PeerAgent {
+	var agent PeerAgent
+
+	v := strings.Trim(subver, "/ ")
+
+	// Comments first. The name prefix is separated by ':' but so is "api:1.2.0"
+	// inside the comment list, so the prefix can only be found once the comments
+	// are out of the way.
+	comments := ""
+	if open := strings.Index(v, "("); open >= 0 {
+		comments = v[open+1:]
+		if close := strings.LastIndex(comments, ")"); close >= 0 {
+			comments = comments[:close]
+		}
+		v = v[:open]
+	}
+	if i := strings.LastIndex(v, ":"); i >= 0 {
+		v = v[i+1:]
+	}
+	agent.Version = strings.TrimSpace(v)
+	agent.Reports = versionAtLeast(agent.Version, firstReportingVersion)
+
+	for _, raw := range strings.Split(comments, ";") {
+		switch comment := strings.TrimSpace(raw); {
+		case comment == "GUI" || comment == "SERV":
+			agent.Mode = comment
+		case strings.HasPrefix(comment, "api:"):
+			agent.API = strings.TrimPrefix(comment, "api:")
+		}
+	}
+	return agent
+}
+
+// versionAtLeast compares a dotted version against a floor, comparing only as
+// many components as the floor has. A version it cannot parse is treated as
+// older, so an unrecognisable peer is never credited with features it may not
+// have.
+func versionAtLeast(version string, floor [3]int) bool {
+	parts := strings.Split(strings.TrimSpace(version), ".")
+	for i := 0; i < len(floor); i++ {
+		if i >= len(parts) {
+			return false
+		}
+		n, err := strconv.Atoi(strings.TrimSpace(parts[i]))
+		if err != nil {
+			return false
+		}
+		if n != floor[i] {
+			return n > floor[i]
+		}
+	}
+	return true
 }

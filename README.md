@@ -5,7 +5,31 @@
 [![Container](https://img.shields.io/badge/ghcr.io-abkvme%2Ftaler--explorer-blue?logo=docker)](https://github.com/abkvme/taler-explorer/pkgs/container/taler-explorer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A lightweight, single-binary **block explorer for [Taler](https://github.com/abkvme/taler)** — a hybrid PoW (Lyra2Z) / PoS Litecoin fork.
+A lightweight, single-binary **block explorer for the [Taler Blockchain](https://github.com/abkvme/taler) network** — a hybrid PoW (Lyra2Z) / PoS Bitcoin Core fork producing the **Taler Coin** (ticker **TLR**) cryptocurrency.
+
+---
+
+## ⚠️ Trademark Notice — Not Affiliated with GNU Taler
+
+**Taler Blockchain** and **Taler Coin** are trademarks of an open-source,
+community-driven cryptocurrency project, launched on **13 September 2017**.
+This explorer is part of that project's tooling.
+
+This project is **not affiliated** with — and has **no connection** to —
+**[GNU Taler](https://taler.net/)**, a separate digital payment system
+developed by the GNU Project. The two projects share a similar name but
+have entirely different goals, codebases, technologies, and origins.
+
+| Project | What it is | Where to find it |
+| --- | --- | --- |
+| **Taler Blockchain** *(this project)* | Hybrid PoW/PoS blockchain network | [taler.tech](https://taler.tech) |
+| **Taler Coin (TLR)** *(this project)* | Cryptocurrency unit on the Taler Blockchain network | [taler.tech](https://taler.tech) |
+| **GNU Taler** *(unrelated)* | Digital payment system by the GNU Project | [taler.net](https://taler.net/) |
+
+If you came here looking for **GNU Taler**, please visit
+**[taler.net](https://taler.net/)**.
+
+---
 
 * **Modern animated UI** — dark glassmorphism, live sparklines, live peer map, responsive header grid.
 * **No external dependencies at runtime** — pure-Go SQLite (`modernc.org/sqlite`), no cgo, cross-compiles cleanly.
@@ -65,13 +89,13 @@ docker compose up -d
 The compose file maps `host.docker.internal` so the container reaches a
 `talerd` running on the Docker host.
 
-### B. Full stack — Taler node + explorer together
+### B. Full stack — Taler Blockchain node + explorer together
 
 Runs the official [`ghcr.io/abkvme/taler`](https://github.com/abkvme/taler) image
 alongside the explorer, already wired for JSON-RPC on the compose-internal
 network (RPC port is **not** exposed to the host — only reachable from the
-explorer container). The P2P port `23153` **is** published so your node accepts
-inbound peers.
+explorer container). The P2P port `23153` **is** published so your Taler
+Blockchain node accepts inbound peers.
 
 ```sh
 mkdir -p ./taler-conf ./explorer-conf

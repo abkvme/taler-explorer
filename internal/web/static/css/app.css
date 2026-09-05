@@ -945,3 +945,29 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
   .data-table th, .data-table td { padding: 10px 12px; }
   .nav a { padding: 6px 8px; font-size: 14px; }
 }
+
+/* ---------- Peer run mode and API sidecar ----------
+   Only Taler 0.20.0 and later report either. For anything older the cells say
+   so - a muted "?" and a dash - rather than showing an answer the peer never
+   gave. Everything here is a claim made by a remote peer, not a verified fact,
+   so nothing is styled to look authoritative. */
+.agent-cell { text-align: center; white-space: nowrap; }
+.agent-icon {
+  display: inline-block;
+  min-width: 1.4em;
+  font-size: 15px;
+  line-height: 1;
+  cursor: default;
+}
+.agent-gui  { color: var(--accent); }
+.agent-serv { color: var(--fg); opacity: .75; }
+/* Reported nothing, or too old to report: deliberately faint. */
+.agent-unknown,
+.agent-unsupported,
+.agent-none { color: var(--fg-muted); opacity: .8; font-size: 13px; }
+.agent-api {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
