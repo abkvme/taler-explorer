@@ -398,4 +398,33 @@
     const mount = document.getElementById('sparkline-mount');
     renderInto(mount, lastSeries);
   });
+
+  // ==========================================================================
+  // Sticky offset for table headings.
+  //
+  // The nav row is the only pinned element, and its height changes with the
+  // viewport: on narrow screens the search box and nav wrap onto their own
+  // rows. Sticky <th> needs that height as a `top` offset, and CSS cannot ask
+  // for it, so it is measured and published as --header-h. The stylesheet
+  // carries a desktop-sized fallback, so the headings are still roughly right
+  // if this never runs.
+  // ==========================================================================
+  (function trackHeaderHeight() {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+
+    const publish = function () {
+      const h = Math.round(header.getBoundingClientRect().height);
+      if (h > 0) document.documentElement.style.setProperty('--header-h', h + 'px');
+    };
+
+    publish();
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(publish).observe(header);
+    } else {
+      window.addEventListener('resize', publish);
+    }
+    // Web fonts land after first paint and can change the row's height.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(publish);
+  })();
 })();

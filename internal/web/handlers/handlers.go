@@ -34,7 +34,7 @@ type Handlers struct {
 
 type pageData struct {
 	Title       string
-	Active      string // "blocks" | "txs" | "movements" | "network" | "block" | "tx"
+	Active      string // "blocks" | "txs" | "movements" | "network" | "about" | "block" | "tx"
 	UI          config.UIConfig
 	HeaderStats *headerStatsView
 	Body        any
@@ -321,6 +321,19 @@ func (h *Handlers) Movements(w http.ResponseWriter, r *http.Request) {
 			"ThresholdMid":  h.Cfg.Movements.ThresholdMid,
 			"ThresholdHigh": h.Cfg.Movements.ThresholdHigh,
 		},
+	})
+}
+
+// About renders /about — a static page of project links.
+//
+// Nothing here is read from the chain or the database, so it stays up even when
+// the node is unreachable; the header tiles above it degrade on their own.
+func (h *Handlers) About(w http.ResponseWriter, r *http.Request) {
+	h.render(w, r, "about.html", pageData{
+		Title:       h.Cfg.UI.SiteName + " — About",
+		Active:      "about",
+		UI:          h.Cfg.UI,
+		HeaderStats: h.newHeaderStats(r.Context()),
 	})
 }
 
@@ -853,6 +866,7 @@ func (h *Handlers) Sitemap(w http.ResponseWriter, r *http.Request) {
 	write(base+"/", "", "always", "1.0")
 	write(base+"/txs", "", "always", "0.9")
 	write(base+"/network", "", "hourly", "0.5")
+	write(base+"/about", "", "monthly", "0.3")
 
 	const maxEntries = 500
 	if blocks, err := h.Store.RecentBlocks(r.Context(), maxEntries); err == nil {

@@ -1,0 +1,68 @@
+{{define "body"}}
+<section class="hero">
+  <h1 data-t="About">About</h1>
+</section>
+
+<section class="about-banner">
+  <img src="/static/img/taler-banner.jpg" width="1200" height="800"
+       alt="Taler Blockchain — privacy by design, high performance and efficiency, secure and open source, supports PoS and PoW">
+</section>
+
+<section class="about-intro card">
+  <p data-t="Taler (TLR) is an open-source hybrid PoW/PoS blockchain. This explorer is a read-only view of the chain: blocks, transactions, addresses, and the peers currently making up the network.">Taler (TLR) is an open-source hybrid PoW/PoS blockchain. This explorer is a read-only view of the chain: blocks, transactions, addresses, and the peers currently making up the network.</p>
+</section>
+
+<section class="about-grid">
+  <div class="card about-card">
+    <h2 data-t="Project">Project</h2>
+    <ul class="about-links">
+      <li><span class="about-key" data-t="Website">Website</span>
+        <a href="https://taler.tech/" target="_blank" rel="noopener">taler.tech</a></li>
+      <li><span class="about-key" data-t="Explorer">Explorer</span>
+        <a href="https://explorer.taler.tech/" target="_blank" rel="noopener">explorer.taler.tech</a></li>
+      <li><span class="about-key">GitHub</span>
+        <a href="https://github.com/abkvme/taler" target="_blank" rel="noopener">github.com/abkvme/taler</a></li>
+      <li><span class="about-key" data-t="License">License</span>
+        <a href="https://github.com/abkvme/taler/blob/main/COPYING" target="_blank" rel="noopener" data-t="MIT License">MIT License</a></li>
+    </ul>
+  </div>
+
+  <div class="card about-card">
+    <h2 data-t="Community">Community</h2>
+    <ul class="about-links">
+      <li><span class="about-key">Telegram</span>
+        <a href="https://t.me/talercommunity" target="_blank" rel="noopener">@talercommunity</a></li>
+      <li><span class="about-key" data-t="Issue Tracker">Issue Tracker</span>
+        <a href="https://github.com/abkvme/taler/issues" target="_blank" rel="noopener">github.com/abkvme/taler/issues</a></li>
+      <li><span class="about-key" data-t="Change Log">Change Log</span>
+        <a href="https://github.com/abkvme/taler/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG.md</a></li>
+    </ul>
+  </div>
+
+  <div class="card about-card">
+    <h2 data-t="Network">Network</h2>
+    <ul class="about-links">
+      <li><span class="about-key" data-t="Seed Nodes">Seed Nodes</span>
+        <a href="https://github.com/abkvme/taler-seeds" target="_blank" rel="noopener">github.com/abkvme/taler-seeds</a></li>
+      <li><span class="about-key" data-t="Live peers">Live peers</span>
+        <a href="/network" data-t="Network page">Network page</a></li>
+      <li><span class="about-key" data-t="Releases">Releases</span>
+        <a href="https://github.com/abkvme/taler/releases" target="_blank" rel="noopener" data-t="Download the wallet">Download the wallet</a></li>
+    </ul>
+  </div>
+
+  <div class="card about-card">
+    <h2 data-t="This explorer">This explorer</h2>
+    <ul class="about-links">
+      <li><span class="about-key" data-t="Version">Version</span>
+        <a href="https://github.com/abkvme/taler-explorer/releases" target="_blank" rel="noopener">{{buildVersion}}</a></li>
+      <li><span class="about-key" data-t="Source">Source</span>
+        <a href="https://github.com/abkvme/taler-explorer" target="_blank" rel="noopener">github.com/abkvme/taler-explorer</a></li>
+      <li><span class="about-key" data-t="Legacy repo">Legacy repo</span>
+        <a href="https://github.com/cryptadev/taler" target="_blank" rel="noopener">github.com/cryptadev/taler</a></li>
+    </ul>
+  </div>
+</section>
+
+<p class="about-footer muted" data-t="Maintained by abkvme, 2025-2026">Maintained by abkvme, 2025-2026</p>
+{{end}}

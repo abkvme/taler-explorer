@@ -72,6 +72,7 @@ func (s *Server) buildRouter() http.Handler {
 	r.Get("/sitemap.xml", h.Sitemap)
 	r.Get("/movements", h.Movements)
 	r.Get("/network", h.Network)
+	r.Get("/about", h.About)
 
 	// Private partials consumed by HTMX/polling from the browser.
 	r.Get("/_partial/header-stats", h.HeaderStats)

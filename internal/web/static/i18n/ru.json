@@ -7,7 +7,6 @@
   "Search": "Поиск",
   "chain": "блокчейн",
   "View release notes": "Примечания к выпуску",
-
   "Difficulty": "Сложность",
   "Supply": "Эмиссия",
   "Price": "Цена",
@@ -18,7 +17,6 @@
   "Price — last 24h": "Цена — последние 24 часа",
   "Open on qutrade.io": "Открыть на qutrade.io",
   "Supply × Price": "Эмиссия × Цена",
-
   "Latest blocks": "Последние блоки",
   "Newest blocks at the top. Click any row for block details.": "Самые свежие блоки сверху. Щёлкните по строке, чтобы увидеть детали.",
   "Time": "Время",
@@ -26,7 +24,6 @@
   "Txs": "Тр-ций",
   "Size": "Размер",
   "Hash": "Хэш",
-
   "indexed.": "проиндексировано.",
   "Amount tiers:": "Градации сумм:",
   "Txid": "Txid",
@@ -37,7 +34,6 @@
   "mempool": "мемпул",
   "PoS reward": "PoS вознаграждение",
   "Copy txid": "Скопировать txid",
-
   "Proof type": "Тип подтверждения",
   "Bits": "Биты",
   "Block": "Блок",
@@ -48,7 +44,6 @@
   "Role": "Роль",
   "block reward": "вознаграждение за блок",
   "stake reward": "вознаграждение за стейк",
-
   "Transaction": "Транзакция",
   "Total out": "Всего на выходе",
   "Inputs / Outputs": "Входы / Выходы",
@@ -66,17 +61,14 @@
   "Previous tx not indexed": "Предыдущая транзакция не проиндексирована",
   "No inputs indexed for this transaction.": "Входы для этой транзакции не проиндексированы.",
   "Inputs fetched live from the node — this tx predates the explorer's input index, so future reloads stay fast only if you reindex.": "Входы получены напрямую с ноды — эта транзакция старше, чем индекс входов в обозревателе. Чтобы последующие загрузки были быстрыми, сделайте переиндексацию.",
-
   "Received": "Получено",
   "Sent": "Отправлено",
   "Net": "Итог",
   "No transactions indexed for this address yet.": "Для этого адреса пока нет проиндексированных транзакций.",
-
   "Large transactions": "Крупные транзакции",
   "Transactions moving more than": "Транзакции на сумму больше",
   "Tiers:": "Градации:",
   "Total": "Всего",
-
   "Every peer the node has connected to in the last": "Все пиры, к которым нода подключалась за последние",
   "Total peers seen": "Всего пиров",
   "recently": "недавно",
@@ -100,11 +92,29 @@
   "Last seen": "Последняя активность",
   "Unknown": "Неизвестно",
   "Peer world map": "Карта пиров по миру",
-
   "First": "Первая",
   "Prev": "Пред.",
   "Next": "След.",
   "Last": "Последняя",
   "Page": "Страница",
-  "per page": "на странице"
+  "per page": "на странице",
+  "About": "О проекте",
+  "Taler (TLR) is an open-source hybrid PoW/PoS blockchain. This explorer is a read-only view of the chain: blocks, transactions, addresses, and the peers currently making up the network.": "Taler (TLR) — блокчейн с открытым исходным кодом и гибридным механизмом PoW/PoS. Этот обозреватель показывает цепочку только для чтения: блоки, транзакции, адреса и узлы, из которых сейчас состоит сеть.",
+  "Project": "Проект",
+  "Website": "Сайт",
+  "Explorer": "Обозреватель",
+  "License": "Лицензия",
+  "MIT License": "Лицензия MIT",
+  "Community": "Сообщество",
+  "Issue Tracker": "Трекер задач",
+  "Change Log": "История изменений",
+  "Seed Nodes": "Сид-узлы",
+  "Live peers": "Активные узлы",
+  "Network page": "Страница сети",
+  "Releases": "Релизы",
+  "Download the wallet": "Скачать кошелёк",
+  "This explorer": "Этот обозреватель",
+  "Source": "Исходный код",
+  "Legacy repo": "Старый репозиторий",
+  "Maintained by abkvme, 2025-2026": "Поддерживается abkvme, 2025-2026"
 }

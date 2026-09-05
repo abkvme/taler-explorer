@@ -45,7 +45,7 @@ func LoadTemplates(efs embed.FS, ui config.UIConfig, version string) (*Templates
 		"partials/pagination.html",
 	}
 
-	pages := []string{"blocks.html", "txs.html", "block_detail.html", "tx_detail.html", "address_detail.html", "movements.html", "network.html", "not_found.html"}
+	pages := []string{"blocks.html", "txs.html", "block_detail.html", "tx_detail.html", "address_detail.html", "movements.html", "network.html", "about.html", "not_found.html"}
 	for _, p := range pages {
 		files := append([]string{"layout.html", p}, partialPaths...)
 		tpl, err := template.New(p).Funcs(funcs).ParseFS(tplFS, files...)
