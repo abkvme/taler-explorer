@@ -66,3 +66,30 @@ func TestVersionAtLeast(t *testing.T) {
 		}
 	}
 }
+
+// The version column and the version chart used to parse the subver themselves,
+// each taking the text after the last colon. A colon inside a comment - which is
+// exactly what "api:0.1.0-dev" is - then won, and a 0.20.0 node with a sidecar
+// was displayed and counted as 0.1.0-dev. Both now go through parseAgent.
+func TestVersionHelpersIgnoreCommentColons(t *testing.T) {
+	for _, c := range []struct {
+		subver string
+		clean  string
+		family string
+	}{
+		{"/Taler:0.20.0(GUI; api:0.1.0-dev)/", "0.20.0", "0.20.x"},
+		{"/Taler:0.20.0(SERV; api:1.2.0; eu-1)/", "0.20.0", "0.20.x"},
+		{"/Taler:0.20.0(GUI)/", "0.20.0", "0.20.x"},
+		{"/Taler:0.19.6.8/", "0.19.6.8", "0.19.x"},
+		{"/TalerCore:0.16.3.4(TalerCrypto.com)/", "0.16.3.4", "0.16.x"},
+		{"", "", ""},
+		{"/Taler:/", "", ""},
+	} {
+		if got := cleanVersion(c.subver); got != c.clean {
+			t.Errorf("cleanVersion(%q) = %q, want %q", c.subver, got, c.clean)
+		}
+		if got := versionFamily(c.subver); got != c.family {
+			t.Errorf("versionFamily(%q) = %q, want %q", c.subver, got, c.family)
+		}
+	}
+}

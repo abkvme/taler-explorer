@@ -543,15 +543,13 @@ func (h *Handlers) fetchSelfPeers(ctx context.Context, nowTS int64) []store.Peer
 
 // versionFamily collapses a peer subversion to its first two version
 // components, e.g. "/Taler:0.16.3.4/" -> "0.16.x". Returns "" for empty input.
+//
+// Goes through parseAgent rather than splitting the string itself: it used to
+// take the text after the last colon, which on
+// "/Taler:0.20.0(GUI; api:0.1.0-dev)/" is the sidecar version, so a 0.20.0 node
+// was counted in the chart as "0.1.x".
 func versionFamily(subver string) string {
-	v := strings.Trim(subver, "/ ")
-	if v == "" {
-		return ""
-	}
-	if i := strings.LastIndex(v, ":"); i >= 0 {
-		v = v[i+1:]
-	}
-	v = strings.Trim(v, "/ ")
+	v := parseAgent(subver).Version
 	if v == "" {
 		return ""
 	}

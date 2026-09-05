@@ -221,22 +221,17 @@ func fmtTLRExact(v float64) template.HTML {
 
 // cleanVersion extracts the numeric version from a bitcoin-style subver like
 //   /Taler:0.19.6.8/                       -> "0.19.6.8"
-//   /TalerCore:0.16.3.4/                   -> "0.16.3.4"
 //   /TalerCore:0.16.3.4(TalerCrypto.com)/  -> "0.16.3.4"
-// Strips wrapping slashes, the "Name:" prefix, and any parenthesized comment
-// some forks append to identify themselves (BIP-14 style).
+//   /Taler:0.20.0(GUI; api:0.1.0-dev)/     -> "0.20.0"
+//
+// It is a thin wrapper over parseAgent on purpose. This used to be its own
+// parser that took the text after the *last* colon and only then looked for a
+// comment, which is fine until a comment contains a colon of its own: on
+// "/Taler:0.20.0(GUI; api:0.1.0-dev)/" the last colon is the one in "api:", so
+// the node's version column showed the sidecar's "0.1.0-dev)". One parser means
+// the version column and the API column can no longer disagree.
 func cleanVersion(s string) string {
-	s = strings.Trim(s, "/ ")
-	if s == "" {
-		return ""
-	}
-	if i := strings.LastIndex(s, ":"); i >= 0 {
-		s = s[i+1:]
-	}
-	if i := strings.Index(s, "("); i >= 0 {
-		s = s[:i]
-	}
-	return strings.Trim(s, "/ ")
+	return parseAgent(s).Version
 }
 
 // txTier maps a tx's total_out to a CSS class.
