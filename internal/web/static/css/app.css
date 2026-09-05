@@ -154,7 +154,12 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
 @media (max-width: 900px) {
   .site-header-top { grid-template-columns: auto 1fr; row-gap: 10px; }
   .search-form { grid-column: 1 / -1; min-width: 0; max-width: none; width: 100%; }
-  .nav { justify-self: start; flex-wrap: wrap; }
+  /* Span the row, like the search box below it. Without this the nav lands in
+     the first `auto` column, which is sized against the brand beside it, so the
+     grid squeezed the column and the last item wrapped onto its own line while
+     the rest of the row sat empty. */
+  .nav { grid-column: 1 / -1; justify-self: start; flex-wrap: wrap; gap: 10px; }
+  .nav a { padding: 6px 8px; }
 }
 
 .brand {
@@ -342,6 +347,33 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
   box-shadow: var(--shadow);
   overflow: hidden;
 }
+
+/* A card holding a data table, which must not trap the sticky column heading.
+   The plain .card breaks it twice over: `overflow: hidden` makes the card a
+   scroll container, and a non-none `backdrop-filter` makes it a containing
+   block for sticky descendants. Either one alone re-anchors the heading from
+   the viewport to the card, which parked it --header-h pixels below the card's
+   top edge - the heading floating in the middle of the table.
+
+   The glass blur goes with them. --glass is #161a25 at 55%, so an opaque
+   --bg-1 lands within a shade of how the blurred card already rendered over
+   this page's background. */
+.card-table {
+  overflow: visible;
+  background: var(--bg-1);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Without overflow clipping, a hovered first or last row squares off the
+   card's rounded corners. Round the corner cells instead. Scoped to a
+   .table-wrap that is actually the card's first/last child, so a card with a
+   toolbar above its table (the network page) keeps square top corners on the
+   table, as it should. */
+.card-table > .table-wrap:first-child thead tr:first-child th:first-child { border-top-left-radius: 16px; }
+.card-table > .table-wrap:first-child thead tr:first-child th:last-child { border-top-right-radius: 16px; }
+.card-table > .table-wrap:last-child tbody tr:last-child td:first-child { border-bottom-left-radius: 16px; }
+.card-table > .table-wrap:last-child tbody tr:last-child td:last-child { border-bottom-right-radius: 16px; }
 
 .summary-grid {
   display: grid; gap: 14px;
@@ -612,7 +644,7 @@ code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; 
   font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
   color: var(--fg-muted);
   /* Opaque: rows pass underneath, and a translucent heading would show them. */
-  background: var(--bg-1);
+  background: var(--bg-2);
   position: sticky; top: var(--header-h); z-index: 5;
   /* border-bottom does not travel with a sticky cell in a collapsed table, so
      the separating line is drawn as a shadow instead. */
@@ -1002,14 +1034,29 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
 }
 
 /* ---------- About page ---------- */
+
+/* Banner and intro sit side by side once there is room, so the artwork reads
+   as an illustration rather than a full-bleed hero. Below 900px they stack and
+   the banner takes the full width, which is the only place it should. */
+.about-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+@media (min-width: 900px) {
+  .about-top { grid-template-columns: minmax(0, 420px) minmax(0, 1fr); }
+}
+
 .about-banner {
-  margin: 0 0 20px;
+  margin: 0;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  /* The artwork is 3:2. Reserving the ratio keeps the links below it from
-     jumping once the image decodes. */
+  /* The artwork is 3:2. Reserving the ratio keeps the text beside it from
+     shifting once the image decodes. */
   aspect-ratio: 3 / 2;
 }
 .about-banner img {
@@ -1019,7 +1066,7 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
   object-fit: cover;
 }
 
-.about-intro { margin-bottom: 20px; padding: 18px 20px; }
+.about-intro { margin: 0; padding: 18px 20px; }
 .about-intro p { margin: 0; color: var(--fg-muted); max-width: 70ch; }
 
 .about-grid {
@@ -1030,8 +1077,8 @@ tr.tier-mid  { background: color-mix(in oklab, var(--warn) 6%, transparent); }
 @media (min-width: 760px) {
   .about-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (min-width: 1280px) {
-  .about-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (min-width: 1100px) {
+  .about-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 .about-card { padding: 18px 20px; }

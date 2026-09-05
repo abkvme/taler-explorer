@@ -43,7 +43,7 @@
   </dl>
 </section>
 
-<section class="card">
+<section class="card card-table">
   <h2 class="section-h"><span data-t="Inputs">Inputs</span> ({{$t.VinCount}})</h2>
   {{if .InputsFromRPC}}
     <p class="section-note" data-t="Inputs fetched live from the node — this tx predates the explorer's input index, so future reloads stay fast only if you reindex.">Inputs fetched live from the node — this tx predates the explorer's input index, so future reloads stay fast only if you reindex.</p>
@@ -88,7 +88,7 @@
   </div>
 </section>
 
-<section class="card">
+<section class="card card-table">
   <h2 class="section-h"><span data-t="Outputs">Outputs</span> ({{$t.VoutCount}})</h2>
   <div class="table-wrap">
     <table class="data-table tx-table">

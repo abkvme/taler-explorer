@@ -33,10 +33,23 @@
   let currentLang = resolveLang();
   let currentCatalog = null;
 
+  // Cached catalogs are stamped with the build they came from.
+  //
+  // Without the stamp the cache was permanent: fetchCatalog returned whatever
+  // localStorage held and never went back to the server, so every returning
+  // visitor kept the catalog from their first visit and any string added later
+  // silently fell back to English. The language TTL above does not help - it
+  // governs the language *choice*, not the catalog. An entry written by the
+  // old code has no stamp and so reads as stale, which is what we want.
+  const I18N_BUILD = String(window.TALER_BUILD || '');
+
   function loadCachedCatalog(lang) {
     try {
       const raw = localStorage.getItem(I18N_CACHE_PREFIX + lang);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      const entry = JSON.parse(raw);
+      if (!entry || entry.v !== I18N_BUILD || !entry.c) return null;
+      return entry.c;
     } catch (_) { return null; }
   }
 
@@ -48,7 +61,9 @@
       const res = await fetch('/static/i18n/' + lang + '.json', { cache: 'default' });
       if (!res.ok) return null;
       const j = await res.json();
-      try { localStorage.setItem(I18N_CACHE_PREFIX + lang, JSON.stringify(j)); } catch (_) {}
+      try {
+        localStorage.setItem(I18N_CACHE_PREFIX + lang, JSON.stringify({ v: I18N_BUILD, c: j }));
+      } catch (_) {}
       return j;
     } catch (_) { return null; }
   }

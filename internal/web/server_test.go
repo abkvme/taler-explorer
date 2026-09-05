@@ -94,7 +94,7 @@ func TestAboutPage(t *testing.T) {
 		"/static/img/taler-banner.jpg",
 		"https://taler.tech/",
 		"https://t.me/talercommunity",
-		"https://github.com/abkvme/taler-seeds",
+		"https://github.com/abkvme/taler/releases",
 		`data-t="About"`,
 	} {
 		if !strings.Contains(body, want) {

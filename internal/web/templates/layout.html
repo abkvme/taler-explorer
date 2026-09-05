@@ -16,6 +16,7 @@
   <!-- Early-paint i18n: read stored preference or auto-detect from browser,
        apply cached catalog synchronously so translated text renders on first
        paint. Non-cached languages fetch async via app.js and re-apply. -->
+  <script>window.TALER_BUILD = {{buildVersion}};</script>
   <script>
   (function () {
     var SUP = ['en','be','ru','uk'];
@@ -36,8 +37,13 @@
     } catch (_) {}
     document.documentElement.setAttribute('lang', lang);
     if (lang === 'en') return;
+    // Same build stamp as app.js: an entry from another build is ignored here
+    // and refetched there, so a newly-added string is never left in English.
     var cat = null;
-    try { cat = JSON.parse(localStorage.getItem('taler_lang_cache_' + lang) || 'null'); } catch (_) {}
+    try {
+      var entry = JSON.parse(localStorage.getItem('taler_lang_cache_' + lang) || 'null');
+      if (entry && entry.v === window.TALER_BUILD && entry.c) cat = entry.c;
+    } catch (_) {}
     if (!cat) return; // will be fetched + applied in app.js
     document.addEventListener('DOMContentLoaded', function () {
       function tr(k) { return (cat && Object.prototype.hasOwnProperty.call(cat, k) && cat[k]) || k; }
